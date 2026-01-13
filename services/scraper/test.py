@@ -43,7 +43,6 @@ def scrape():
                 response = response_info.value
                 if response.status == 200:
                     raw_data = response.json()
-                    print(raw_data)
                     print("\n \n \n \n")
                     gyms = raw_data["result"]["data"]["json"]["gymFacilities"]
                     print(gyms)
