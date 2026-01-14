@@ -1,23 +1,11 @@
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
-from typing import List
+from ingest_data import router as data_ingest_router
+from sqlmodel import SQLModel
 
 
-# Pydantic Model
-class GymData(BaseModel):
-    id: str
-    name: str
-    capacityPercentage: int = Field(..., ge=0, le=100)
-    type: str
-    isClosed: bool
 
-class Gym_Data_From_Scraper(BaseModel):
-    gym: List[GymData]
-
+#fastapi dev main.py
 
 app = FastAPI()
 
-
-@app.post("/api/v1/ingestdata")
-def ingest_data():
-    pass
+app.include_router(data_ingest_router, prefix="/api/v1", tags=["Data_Ingestion"])

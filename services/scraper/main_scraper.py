@@ -49,24 +49,7 @@ def scrape():
                 else:
                     raise Exception("something went wrong")
             
-            # page.goto(os.getenv("WEBSITE_URL"))
-            # page.wait_for_selector("div.chakra-card div.chakra-stack", timeout=10000)
-            # time.sleep(random.uniform(2,5))
-            
-            
-            # cards = page.locator("div.chakra-card")
-            # data = []
-            
-            # for i in range(cards.count()):
-            #     card = cards.nth(i)
-            #     facility = card.locator("p").first.inner_text().strip()
-            #     status = card.locator("span").inner_text().strip()
-            #     data.append({
-            #         "facility": facility,
-            #         "status": status
-            #     })
-                
-            # print(data)
+
         
         except Exception as e:
             page.screenshot(path="error.png")
@@ -77,7 +60,7 @@ def scrape():
 
 
 
-
+# The Solution: If testing in Swagger, replace all single quotes with double quotes. When using your scraper, always use json=data in the requests.post() call, as it automatically converts Python's single quotes to valid JSON double quotes.
 def send_data_to_backend():
     pass
 
