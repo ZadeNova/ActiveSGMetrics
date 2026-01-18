@@ -9,6 +9,18 @@ import hashlib
 
 load_dotenv()
 
+
+def get_base_url():
+    """Automatically toggles between local and production URLs."""
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        return os.getenv("PROD_BACKEND_URL")
+    return os.getenv("LOCAL_BACKEND_URL")
+
+BASE_URL = get_base_url()
+HEALTH_URL = f"{BASE_URL}/api/v1/health"
+INGEST_URL = f"{BASE_URL}/api/v1/ingestdata"
+
+
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0",
@@ -22,6 +34,9 @@ def get_different_user_agent():
     return USER_AGENTS[hash_val % len(USER_AGENTS)]
 
 def scrape():
+    
+    wake_up_backend()
+    
     with sync_playwright() as p:
         
         browser = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled"])
@@ -42,26 +57,60 @@ def scrape():
                 
                 response = response_info.value
                 if response.status == 200:
+                    
                     raw_data = response.json()
-                    print("\n \n \n \n")
                     gyms = raw_data["result"]["data"]["json"]["gymFacilities"]
-                    print(gyms)
+                    send_data_to_backend(gyms)
+                    
                 else:
-                    raise Exception("something went wrong")
+                    raise Exception(f"Failed to fetch Data from ActiveSG: {response.status}")
             
 
-        
         except Exception as e:
             page.screenshot(path="error.png")
+            print(f"Error occured in scrape(): {e}")
             raise
-        
+
         finally:
             browser.close()
+    
 
+
+def wake_up_backend():
+    """Ping the backend hosted on railway/render so that the backend will be awake."""
+    try:
+        requests.get(HEALTH_URL, timeout=5)
+    except:
+        pass        
+    
 
 
 # The Solution: If testing in Swagger, replace all single quotes with double quotes. When using your scraper, always use json=data in the requests.post() call, as it automatically converts Python's single quotes to valid JSON double quotes.
-def send_data_to_backend():
-    pass
+def send_data_to_backend(data_to_backend, retries=3, delay=30):
+    
+    
+    for attempt in range(retries):
+        
+        try:
+            print(f"Attempt {attempt + 1}: Sending data to backend...")
+            response = requests.post(INGEST_URL, json=data_to_backend, timeout=60)
+            
+            if response.status_code == 201:
+                print(f"Successfully sent data: {response.json()}")
+                return True
+            else:
+                print(f"Server returned status {response.status_code}")
+        
+        except requests.exceptions.ConnectionError:
+            print(f"Could not detect to backend. Is the FastAPI server running? Waiting {delay}s...")
+            time.sleep(delay)
+        except Exception as e:
+            print(f"Unexpected error occured: {e}")
+            break
+            
+    print("Failed to send data after multiple retries")
+    return False
+    
+
 
 scrape()
