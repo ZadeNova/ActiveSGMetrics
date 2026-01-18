@@ -17,6 +17,7 @@ def get_base_url():
     return os.getenv("LOCAL_BACKEND_URL")
 
 BASE_URL = get_base_url()
+#BASE_URL = os.getenv("LOCAL_BACKEND_URL")
 HEALTH_URL = f"{BASE_URL}/api/v1/health"
 INGEST_URL = f"{BASE_URL}/api/v1/ingestdata"
 
