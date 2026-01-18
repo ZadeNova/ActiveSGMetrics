@@ -26,7 +26,7 @@ jobs:
       - name: Run Scraper
         env:
           WEBSITE_URL: ${{ secrets.WEBSITE_URL }}
-          LOCAL_BACKEND_URL: ${{ secrets.LOCAL_BACKEND_URL }}
+          #LOCAL_BACKEND_URL: ${{ secrets.LOCAL_BACKEND_URL }}
           PROD_BACKEND_URL: ${{ secrets.PROD_BACKEND_URL }}
           GITHUB_ACTIONS: "true"
         run: python services/scraper/main_scraper.py

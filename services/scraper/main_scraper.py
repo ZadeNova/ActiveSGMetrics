@@ -77,17 +77,26 @@ def scrape():
     
 
 
-def wake_up_backend():
+def wake_up_backend(retries=30, delay=5):
     """Ping the backend hosted on railway/render so that the backend will be awake."""
-    try:
-        requests.get(HEALTH_URL, timeout=5)
-    except:
-        pass        
-    
+    for attempt in range(1, retries+1):
+        try:
+            print(f"Wake-up attempt {attempt}/{retries}...")
+            response = requests.get(HEALTH_URL, timeout=10)
+            if response.status_code == 200:
+                print("Backend is awake")
+                return True
+            else:
+                print(f"Backend returned status {response.status_code}, retrying...")
+        except requests.exceptions.RequestException:
+            print(f"Backend not awake yet, retrying in {delay}s...")
+        time.sleep(delay)
+    print("Backend failed to wake up after multiple attempts")
+    return False    
 
 
 # The Solution: If testing in Swagger, replace all single quotes with double quotes. When using your scraper, always use json=data in the requests.post() call, as it automatically converts Python's single quotes to valid JSON double quotes.
-def send_data_to_backend(data_to_backend, retries=3, delay=30):
+def send_data_to_backend(data_to_backend, retries=3, delay=15):
     
     
     for attempt in range(retries):
@@ -96,7 +105,7 @@ def send_data_to_backend(data_to_backend, retries=3, delay=30):
             print(f"Attempt {attempt + 1}: Sending data to backend...")
             response = requests.post(INGEST_URL, json=data_to_backend, timeout=60)
             
-            if response.status_code == 201:
+            if response.status_code in [201, 202]:
                 print(f"Successfully sent data: {response.json()}")
                 return True
             else:
