@@ -49,6 +49,7 @@ cd ActiveSGMetrics
 ```
 ### 2. Set up environment variables
 
+```bash
 # Database Connection (Supabase Transaction Pooler recommended)
 SUPABASE_DATABASE_URL="postgresql://user:password@host:port/dbname"
 
@@ -59,9 +60,11 @@ PROD_BACKEND_URL="https://[YOUR_PROD_URL]"
 
 # Optional: Toggle for local vs prod
 GITHUB_ACTIONS="false"
+```
 
 ### 3. Install dependencies
 
+```bash
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -71,11 +74,9 @@ pip install -r requirements.txt
 
 # Install Playwright browsers
 playwright install chromium
-
+```
 
 ### Chunk 5: Project Structure & License
-This reflects your actual file structure and the license file you uploaded.
-
 
 ```markdown
 ## 📂 Project Structure
