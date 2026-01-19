@@ -8,7 +8,7 @@ def ingest_gym_data(payload, db):
     
     try:
         existing_gym_ids = db.exec(select(GymMetaData.facility_id)).all()
-        existing_gym_ids_set = set(existing_gym_ids_set)
+        existing_gym_ids_set = set(existing_gym_ids)
         
         for item in payload:
             # Check the gym metadata table first before uploading the gym occupancy data
