@@ -96,7 +96,7 @@ def wake_up_backend(retries=30, delay=5):
 
 
 # The Solution: If testing in Swagger, replace all single quotes with double quotes. When using your scraper, always use json=data in the requests.post() call, as it automatically converts Python's single quotes to valid JSON double quotes.
-def send_data_to_backend(data_to_backend, retries=3, delay=15):
+def send_data_to_backend(data_to_backend, retries=3, delay=30):
     
     
     for attempt in range(retries):
