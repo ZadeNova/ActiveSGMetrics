@@ -103,7 +103,7 @@ def send_data_to_backend(data_to_backend, retries=3, delay=30):
         
         try:
             print(f"Attempt {attempt + 1}: Sending data to backend...")
-            response = requests.post(INGEST_URL, json=data_to_backend, timeout=60)
+            response = requests.post(INGEST_URL, json=data_to_backend, timeout=120)
             
             if response.status_code in [201, 202]:
                 print(f"Successfully sent data: {response.json()}")
@@ -114,6 +114,10 @@ def send_data_to_backend(data_to_backend, retries=3, delay=30):
         except requests.exceptions.ConnectionError:
             print(f"Could not detect to backend. Is the FastAPI server running? Waiting {delay}s...")
             time.sleep(delay)
+        
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
+            print(f"Request timed out on attempt {attempt + 1}. Retrying in {delay}s...")
+            
         except Exception as e:
             print(f"Unexpected error occured: {e}")
             break
