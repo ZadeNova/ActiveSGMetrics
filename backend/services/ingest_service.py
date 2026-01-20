@@ -14,7 +14,7 @@ def ingest_gym_data(payload, db):
             # Check the gym metadata table first before uploading the gym occupancy data
             
             
-            if not item.id not in existing_gym_ids_set:
+            if item.id not in existing_gym_ids_set:
                 # If there is a new gym added, add it to the gym metadata table
                 
                 new_metadata = GymMetaData(
@@ -27,14 +27,16 @@ def ingest_gym_data(payload, db):
                 existing_gym_ids_set.add(item.id)
             
             # Start recording the gym occupancy data into the table. INSERT operation
-            occupancy_record = GymOccupancyData(
+            occupancy_records = [
+              GymOccupancyData(
                 facility_id= item.id,
                 occupancy_percentage= item.capacityPercentage,
                 is_closed=item.isClosed,
                 timestamp=batch_time
-            )
+            ) for item in payload
+            ]
             
-            db.add(occupancy_record)
+        db.addall(occupancy_records)
             
         db.commit()
         return len(payload)
