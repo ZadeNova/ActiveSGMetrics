@@ -7,14 +7,14 @@ def ingest_gym_data(payload, db):
     batch_time = datetime.now(timezone.utc).replace(second=0, microsecond=0)
     
     try:
-        existing_gym_ids = db.exec(select(GymMetaData.facility_id)).all()
-        existing_gym_ids_set = set(existing_gym_ids)
-        
+        existing_gym_ids = set(db.exec(select(GymMetaData.facility_id))).all()
+        occupancy_records = []
+                
         for item in payload:
             # Check the gym metadata table first before uploading the gym occupancy data
             
             
-            if item.id not in existing_gym_ids_set:
+            if item.id not in existing_gym_ids:
                 # If there is a new gym added, add it to the gym metadata table
                 
                 new_metadata = GymMetaData(
@@ -24,20 +24,22 @@ def ingest_gym_data(payload, db):
                 )
                 
                 db.add(new_metadata)
-                existing_gym_ids_set.add(item.id)
+                existing_gym_ids.add(item.id)
             
             # Start recording the gym occupancy data into the table. INSERT operation
-            occupancy_records = [
+            occupancy_records.append(
               GymOccupancyData(
                 facility_id= item.id,
                 occupancy_percentage= item.capacityPercentage,
                 is_closed=item.isClosed,
                 timestamp=batch_time
-            ) for item in payload
-            ]
+            )
+              )
             
-        db.addall(occupancy_records)
-            
+        
+        
+        db.add_all(occupancy_records)
+        
         db.commit()
         return len(payload)
     except Exception as e:

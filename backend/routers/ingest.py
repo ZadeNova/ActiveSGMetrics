@@ -3,13 +3,14 @@ from typing import List
 from schemas import Gym_Data_From_Scraper, GymData
 from services.ingest_service import ingest_gym_data
 from database import get_session
+from sqlmodel import Session
 
 router = APIRouter()
 
 @router.post("/ingestdata", status_code=status.HTTP_201_CREATED)
-async def ingest_data(
+def ingest_data(
     payload: List[GymData],
-    db = Depends(get_session)
+    db: Session = Depends(get_session)
 ):
     try:
         result = ingest_gym_data(payload=payload, db=db)
