@@ -7,7 +7,7 @@ def ingest_gym_data(payload, db):
     batch_time = datetime.now(timezone.utc).replace(second=0, microsecond=0)
     
     try:
-        existing_gym_ids = set(db.exec(select(GymMetaData.facility_id))).all()
+        existing_gym_ids = set(db.exec(select(GymMetaData.facility_id)).all())
         occupancy_records = []
                 
         for item in payload:
@@ -25,7 +25,7 @@ def ingest_gym_data(payload, db):
                 
                 db.add(new_metadata)
                 existing_gym_ids.add(item.id)
-            
+                
             # Start recording the gym occupancy data into the table. INSERT operation
             occupancy_records.append(
               GymOccupancyData(
