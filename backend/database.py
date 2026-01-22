@@ -1,5 +1,6 @@
 import os
 from sqlmodel import create_engine, Session
+from sqlalchemy.pool import NullPool
 from dotenv import load_dotenv
 
 
@@ -7,7 +8,9 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("SUPABASE_DATABASE_URL")
 
-engine = create_engine(DATABASE_URL, echo=True)
+# Nullpull forces a fresh new connection to supabase for every new request.
+
+engine = create_engine(DATABASE_URL, poolclass=NullPool, connect_args={"connect_timeout":10})
 
 """Gives u a sesssion for supabase"""
 def get_session():
