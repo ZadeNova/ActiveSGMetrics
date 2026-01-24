@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: activesg_local_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: activesg_dev_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - SUPABASE_DEV_DATABASE_URL=${SUPABASE_DEV_DATABASE_URL}
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - activesg-network
+    depends_on:
+      - db
+
+networks:
+  activesg-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

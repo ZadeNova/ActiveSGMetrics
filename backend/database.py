@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Need to manually change it to SUPABASE_DEV_DATABASE_URL if testing in local
 DATABASE_URL = os.getenv("SUPABASE_DATABASE_URL")
+#DATABASE_URL = os.getenv("SUPABASE_DEV_DATABASE_URL")
 
 # Nullpull forces a fresh new connection to supabase for every new request.
 

@@ -81,7 +81,7 @@ def scrape():
     
 
 
-def wake_up_backend(retries=30, delay=5):
+def wake_up_backend(retries=35, delay=5):
     """Ping the backend hosted on railway/render so that the backend will be awake."""
     for attempt in range(1, retries+1):
         try:
@@ -121,6 +121,7 @@ def send_data_to_backend(data_to_backend, retries=3, delay=30):
         
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
             print(f"Request timed out on attempt {attempt + 1}. Retrying in {delay}s...")
+            time.sleep(delay)
             
         except Exception as e:
             print(f"Unexpected error occured: {e}")
