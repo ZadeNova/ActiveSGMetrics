@@ -19,7 +19,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SUPABASE_DEV_DATABASE_URL=${SUPABASE_DEV_DATABASE_URL}
+      - SUPABASE_DATABASE_URL=${SUPABASE_DATABASE_URL}
     volumes:
       - ./backend:/app/backend
     networks:

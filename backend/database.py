@@ -12,7 +12,7 @@ DATABASE_URL = os.getenv("SUPABASE_DATABASE_URL")
 
 # Nullpull forces a fresh new connection to supabase for every new request.
 
-engine = create_engine(DATABASE_URL, poolclass=NullPool, connect_args={"connect_timeout":10})
+engine = create_engine(DATABASE_URL, poolclass=NullPool, connect_args={"connect_timeout":30}, pool_pre_ping=True, pool_recycle=300)
 
 """Gives u a sesssion for supabase"""
 def get_session():
