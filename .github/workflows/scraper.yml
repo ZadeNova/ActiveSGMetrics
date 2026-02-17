@@ -29,6 +29,6 @@ jobs:
           WEBSITE_URL: ${{ secrets.WEBSITE_URL }}
           #LOCAL_BACKEND_URL: ${{ secrets.LOCAL_BACKEND_URL }}
           #PROD_BACKEND_URL: ${{ secrets.PROD_BACKEND_URL }}
-          DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
           GITHUB_ACTIONS: "true"
         run: python services/scraper/main_scraper.py
