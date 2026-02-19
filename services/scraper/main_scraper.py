@@ -81,8 +81,8 @@ def scrape():
             
             page = context.new_page()
             
-            with page.expect_response(lambda response: "pass.getFacilityCapacities" in response.url) as response_info:
-                page.goto(os.getenv("WEBSITE_URL"))
+            with page.expect_response(lambda response: "pass.getFacilityCapacities" in response.url, timeout=90000) as response_info:
+                page.goto(os.getenv("WEBSITE_URL"), timeout=90000, wait_until="load")
                 
                 response = response_info.value
                 if response.status == 200:
