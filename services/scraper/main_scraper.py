@@ -69,7 +69,10 @@ def scrape():
     
     with sync_playwright() as p:
         
-        browser = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled"])
+        browser = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled",
+         "--no-sandbox",
+         "--disable-setuid-sandbox",
+         "--disable-dev-shm-usage"])
         the_user_agent = get_different_user_agent()
         
         try:
@@ -100,7 +103,7 @@ def scrape():
             
 
         except Exception as e:
-            page.screenshot(path="error.png")
+            page.screenshot(path="debug_timeout.png")
             print(f"Error occured in scrape(): {e}")
             raise
 

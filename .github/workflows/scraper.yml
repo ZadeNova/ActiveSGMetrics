@@ -32,3 +32,10 @@ jobs:
           SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
           GITHUB_ACTIONS: "true"
         run: python services/scraper/main_scraper.py
+
+      - name: Upload Debug Screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraper-debug-images
+          path: debug_timeout.png
