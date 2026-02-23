@@ -81,8 +81,10 @@ def scrape():
             
             page = context.new_page()
             
+            # maybe change it to page.wait_for_load_state
+            # find out what is wait for load state and the difference between wait_until="load" and "networkidle"
             with page.expect_response(lambda response: "pass.getFacilityCapacities" in response.url, timeout=90000) as response_info:
-                page.goto(os.getenv("WEBSITE_URL"), timeout=90000, wait_until="load")
+                page.goto(os.getenv("WEBSITE_URL"), timeout=90000, wait_until="networkidle")
                 
                 response = response_info.value
                 if response.status == 200:
