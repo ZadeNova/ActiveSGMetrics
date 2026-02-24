@@ -9,6 +9,7 @@ psycopg2-binary
 
 # Scraping and Automation
 playwright
+playwright-stealth
 requests
 
 # Utilities

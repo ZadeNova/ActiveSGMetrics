@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+from playwright_stealth import Stealth
 import requests
 from datetime import date, datetime , timezone
 from dotenv import load_dotenv
@@ -52,6 +53,9 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
 ]
 
+
+
+
 def get_different_user_agent():
     today = date.today().isoformat()
     hash_val = int(hashlib.sha256(today.encode()).hexdigest(), 16)
@@ -67,11 +71,10 @@ def scrape():
     #     print("Backend failed to wake up. Aborting scrape to save github action minutes.")
     #     return
     
-    with sync_playwright() as p:
+    with sync_playwright()as p:
         
         browser = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled",
          "--no-sandbox",
-         "--disable-setuid-sandbox",
          "--disable-dev-shm-usage"])
         the_user_agent = get_different_user_agent()
         
@@ -79,16 +82,32 @@ def scrape():
             
             context = browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            user_agent=the_user_agent
+            user_agent=the_user_agent,
+            extra_http_headers={
+                "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+                "Referer": "https://www.google.com/"
+                }
             )
             
             page = context.new_page()
             
+            stealth_config = Stealth()
+            stealth_config.apply_stealth_sync(page)
+            # Apply stealth patches ( makes playwright even more human like to prevent bots)
+            
+            
             # maybe change it to page.wait_for_load_state
             # find out what is wait for load state and the difference between wait_until="load" and "networkidle"
+            
+    
             with page.expect_response(lambda response: "pass.getFacilityCapacities" in response.url, timeout=90000) as response_info:
+                
                 print("Navigating to website...")
+                
                 page.goto(os.getenv("WEBSITE_URL"), timeout=90000, wait_until="commit")
+
+                time.sleep(random.uniform(2,5))
+                page.mouse.move(random.randint(0,500), random.randint(0,500))
                 
                 response = response_info.value
                 if response.status == 200:
