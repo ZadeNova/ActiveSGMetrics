@@ -104,7 +104,7 @@ def scrape():
                 
                 print("Navigating to website...")
                 
-                page.goto(os.getenv("WEBSITE_URL"), timeout=90000, wait_until="commit")
+                page.goto(os.getenv("WEBSITE_URL"), timeout=90000, wait_until="domcontentloaded")
 
                 time.sleep(random.uniform(2,5))
                 page.mouse.move(random.randint(0,500), random.randint(0,500))
@@ -123,6 +123,15 @@ def scrape():
 
         except Exception as e:
             page.screenshot(path="debug_timeout.png")
+            
+            print("--- PAGE SOURCE START ---")
+            try:
+                print(page.content())
+                
+            except:
+                print("Could not get page content")
+            print("--- PAGE SOURCE END ---")
+            
             print(f"Error occured in scrape(): {e}")
             raise
 
