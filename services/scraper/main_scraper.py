@@ -108,8 +108,18 @@ def scrape():
                 
                 page.goto(os.getenv("WEBSITE_URL"), timeout=90000, wait_until="domcontentloaded")
 
-                time.sleep(random.uniform(2,5))
-                page.mouse.move(random.randint(0,500), random.randint(0,500))
+                # 2. THE MISSING PIECE: Wait for a UI element to prove we are inside
+                # Using 'text=Gym' or a specific CSS selector from the dashboard
+                
+                print("Waiting for dashboard UI to load...")
+                try:
+                    page.wait_for_selector("p.chakra-text", timeout=45000) 
+                    print("Gym list detected. Bot check likely cleared.")
+                except:
+                    print("UI element 'Gym' not found. We are likely stuck on the bot challenge.")
+                    # This screenshot will now show you EXACTLY where you are stuck
+                    page.screenshot(path="stuck_on_challenge.png")
+                    raise Exception("Bot challenge not cleared.")
                 
                 response = response_info.value
                 if response.status == 200:
