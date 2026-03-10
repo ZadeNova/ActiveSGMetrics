@@ -117,7 +117,7 @@ def scrape():
                     page.wait_for_selector("p.chakra-text", timeout=45000) 
                     print("Gym list detected. Bot check likely cleared.")
                 except Exception as e:
-                    print("UI element 'Gym' not found. We are likely stuck on the bot challenge: {e}")
+                    print(f"UI element 'Gym' not found. We are likely stuck on the bot challenge: {e}")
                     # This screenshot will now show you EXACTLY where you are stuck
                     page.screenshot(path="stuck_on_challenge.png")
                     
@@ -143,7 +143,7 @@ def scrape():
                 print(page.content())
                 
             except Exception as e:
-                print("Could not get page content: {e}")
+                print(f"Could not get page content: {e}")
             print("--- PAGE SOURCE END ---")
             
             print(f"Error occured in scrape(): {e}")
@@ -194,7 +194,7 @@ def ingest_gym_data(gyms_list):
 
 
 
-
-scrape()
+if __name__ == "__main__":
+    scrape()
 
 

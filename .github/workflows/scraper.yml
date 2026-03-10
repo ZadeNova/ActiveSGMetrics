@@ -30,6 +30,7 @@ jobs:
           #LOCAL_BACKEND_URL: ${{ secrets.LOCAL_BACKEND_URL }}
           #PROD_BACKEND_URL: ${{ secrets.PROD_BACKEND_URL }}
           SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          ACTIVE_SG_API: ${{ secrets.ACTIVE_SG_API }}
           GITHUB_ACTIONS: "true"
         run: python services/scraper/main_scraper.py
 
