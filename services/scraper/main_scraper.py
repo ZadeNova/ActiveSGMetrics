@@ -35,7 +35,7 @@ HEALTH_URL = f"{BASE_URL}/api/v1/health"
 INGEST_URL = f"{BASE_URL}/api/v1/ingestdata"
 
 
-DATABASE_URL = settings.PROD_BACKEND_URLos.getenv("SUPABASE_DATABASE_URL")
+DATABASE_URL = settings.SUPABASE_DATABASE_URL
 # Need to manually change it to SUPABASE_DEV_DATABASE_URL if testing in local
 
 #DATABASE_URL = os.getenv("SUPABASE_DEV_DATABASE_URL")
