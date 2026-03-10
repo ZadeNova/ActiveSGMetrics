@@ -8,6 +8,7 @@ import random, time
 import hashlib
 from sqlmodel import create_engine, Session, select
 from sqlalchemy.pool import NullPool
+from backend.config import settings
 
 load_dotenv()
 # Get the current script's directory 
@@ -25,8 +26,8 @@ from backend.models.gym import GymMetaData , GymOccupancyData
 def get_base_url():
     """Automatically toggles between local and production URLs."""
     if os.getenv("GITHUB_ACTIONS") == "true":
-        return os.getenv("PROD_BACKEND_URL")
-    return os.getenv("LOCAL_BACKEND_URL")
+        return settings.PROD_BACKEND_URL
+    return settings.LOCAL_BACKEND_URL
 
 BASE_URL = get_base_url()
 #BASE_URL = os.getenv("LOCAL_BACKEND_URL")
@@ -34,7 +35,7 @@ HEALTH_URL = f"{BASE_URL}/api/v1/health"
 INGEST_URL = f"{BASE_URL}/api/v1/ingestdata"
 
 
-DATABASE_URL = os.getenv("SUPABASE_DATABASE_URL")
+DATABASE_URL = settings.PROD_BACKEND_URLos.getenv("SUPABASE_DATABASE_URL")
 # Need to manually change it to SUPABASE_DEV_DATABASE_URL if testing in local
 
 #DATABASE_URL = os.getenv("SUPABASE_DEV_DATABASE_URL")
@@ -115,10 +116,11 @@ def scrape():
                 try:
                     page.wait_for_selector("p.chakra-text", timeout=45000) 
                     print("Gym list detected. Bot check likely cleared.")
-                except:
-                    print("UI element 'Gym' not found. We are likely stuck on the bot challenge.")
+                except Exception as e:
+                    print("UI element 'Gym' not found. We are likely stuck on the bot challenge: {e}")
                     # This screenshot will now show you EXACTLY where you are stuck
                     page.screenshot(path="stuck_on_challenge.png")
+                    
                     raise Exception("Bot challenge not cleared.")
                 
                 response = response_info.value
@@ -140,8 +142,8 @@ def scrape():
             try:
                 print(page.content())
                 
-            except:
-                print("Could not get page content")
+            except Exception as e:
+                print("Could not get page content: {e}")
             print("--- PAGE SOURCE END ---")
             
             print(f"Error occured in scrape(): {e}")
@@ -194,65 +196,5 @@ def ingest_gym_data(gyms_list):
 
 
 scrape()
-
-
-"""
-Commented out as I will be shifting the database ingestion to the scraper.
-Will just leave this here in case I need it again.
-"""
-# def wake_up_backend(retries=35, delay=5):
-#     """Ping the backend hosted on railway/render so that the backend will be awake."""
-#     for attempt in range(1, retries+1):
-#         try:
-#             print(f"Wake-up attempt {attempt}/{retries}...")
-#             response = requests.get(HEALTH_URL, timeout=10)
-#             if response.status_code == 200:
-#                 print("Backend is awake")
-#                 return True
-#             else:
-#                 print(f"Backend returned status {response.status_code}, retrying...")
-#         except requests.exceptions.RequestException:
-#             print(f"Backend not awake yet, retrying in {delay}s...")
-#         time.sleep(delay)
-#     print("Backend failed to wake up after multiple attempts")
-#     return False    
-
-"""
-Commented out as I will be shifting the database ingestion to the scraper.
-Will just leave this here in case I need it again.
-"""
-# The Solution: If testing in Swagger, replace all single quotes with double quotes. When using your scraper, always use json=data in the requests.post() call, as it automatically converts Python's single quotes to valid JSON double quotes.
-# def send_data_to_backend(data_to_backend, retries=3, delay=30):
-    
-    
-#     for attempt in range(retries):
-        
-#         try:
-#             print(f"Attempt {attempt + 1}: Sending data to backend...")
-#             response = requests.post(INGEST_URL, json=data_to_backend, timeout=120)
-            
-#             if response.status_code in [201, 202]:
-#                 print(f"Successfully sent data: {response.json()}")
-#                 return True
-#             else:
-#                 print(f"Server returned status {response.status_code}")
-        
-#         except requests.exceptions.ConnectionError:
-#             print(f"Could not detect to backend. Is the FastAPI server running? Waiting {delay}s...")
-#             time.sleep(delay)
-        
-#         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout):
-#             print(f"Request timed out on attempt {attempt + 1}. Retrying in {delay}s...")
-#             time.sleep(delay)
-            
-#         except Exception as e:
-#             print(f"Unexpected error occured: {e}")
-#             break
-            
-#     print("Failed to send data after multiple retries")
-#     return False
-    
-    
-# Nullpull forces a fresh new connection to supabase for every new request.
 
 

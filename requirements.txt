@@ -14,3 +14,4 @@ requests
 
 # Utilities
 python-dotenv
+pydantic-settings
