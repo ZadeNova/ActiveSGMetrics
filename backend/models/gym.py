@@ -18,8 +18,33 @@ class GymMetaData(SQLModel, table=True):
     occupancy_records: List["GymOccupancyData"] = Relationship(back_populates="gym")
 
 
+
+# Its time to optimize this.
+"""
+Optimization will be to add an index. SInce this is read heavy , adding an index would be better
+
+EXplanation:
+Problem: When the frontend requests a gym history ( give me last 72 hours for yishun ), the DB would normally have to read every single row , filter by ID, and then do an expensive in memory sort by timestamp ( there will be a full table scan )
+
+The solution: Have a composite index , which creates a B-Tree structure sorted FIRST by facility_id, and SECOND by timestamp
+
+THe result:
+- Lookups from O(n) to O(log N)
+- Database instantly finds the facility and grabs the pre-sorted timestamps
+- Query times drop from seconds to miliseconds, saving CPU and RAM
+
+Trade-off:
+- SLightly slower inserts ( as the tree must be updated ) and extra disk space used. Given low write volume and high read potential due to the application purpose, this is a reasonable tradeoff.
+
+Let me add it tomorrow, i wanna sleep
+"""
+
+
+
 class GymOccupancyData(SQLModel, table=True):    
     __tablename__ = "gym_occupancy"
+    
+    
     
     id: Optional[int] = Field(default=None, primary_key=True)
     
