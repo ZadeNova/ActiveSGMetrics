@@ -107,7 +107,7 @@ def scrape():
                 
                 print("Navigating to website...")
                 
-                page.goto(os.getenv("WEBSITE_URL"), timeout=90000, wait_until="domcontentloaded")
+                page.goto(settings.WEBSITE_URL, timeout=90000, wait_until="domcontentloaded")
 
                 # 2. THE MISSING PIECE: Wait for a UI element to prove we are inside
                 # Using 'text=Gym' or a specific CSS selector from the dashboard
