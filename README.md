@@ -36,67 +36,6 @@ The project consists of three main components:
 * **Modern Stack**: Fully typed Python codebase using Pydantic and SQLModel.
 
 
-## Installation & Setup
-
-### Prerequisites
-* Python 3.10+
-* A PostgreSQL Database (e.g., Supabase)
-
-### 1. Clone the Repository
-```bash
-git clone [https://github.com/ZadeNova/ActiveSGMetrics.git](https://github.com/ZadeNova/ActiveSGMetrics.git)
-cd ActiveSGMetrics
-```
-### 2. Set up environment variables
-
-```bash
-# Database Connection (Supabase Transaction Pooler recommended)
-SUPABASE_DATABASE_URL="postgresql://user:password@host:port/dbname"
-
-# URLs for Scraper
-WEBSITE_URL="https://[ACTIVESG_URL_HERE]"
-LOCAL_BACKEND_URL="http://localhost:8000"
-PROD_BACKEND_URL="https://[YOUR_PROD_URL]"
-
-# Optional: Toggle for local vs prod
-GITHUB_ACTIONS="false"
-```
-
-### 3. Install dependencies
-
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install requirements
-pip install -r requirements.txt
-
-# Install Playwright browsers
-playwright install chromium
-```
-
-### Chunk 5: Project Structure & License
-
-```markdown
-## 📂 Project Structure
-
-```text
-ActiveSGMetrics/
-├── .github/workflows/   # GitHub Actions (CI/CD)
-├── backend/             # FastAPI Application
-│   ├── migrations/      # Alembic database migrations
-│   ├── models/          # SQLModel database tables (GymMetaData, GymOccupancyData)
-│   ├── routers/         # API Endpoints (ingest, health, data)
-│   ├── schemas/         # Pydantic data schemas
-│   ├── services/        # Backend logic services
-│   ├── database.py      # DB connection logic
-│   └── main.py          # App entry point
-├── services/scraper/    # Scraper Logic
-│   └── main_scraper.py  # Playwright script
-├── requirements.txt     # Python dependencies
-└── README.md            # Project documentation
-```
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
