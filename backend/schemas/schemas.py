@@ -3,7 +3,9 @@ from pydantic import BaseModel, Field
 from datetime import datetime 
 
 # For fastAPI pydantic models
-
+"""
+Request/response pydantic models shared between layers.
+"""
 
 
 class GymData(BaseModel):
@@ -29,6 +31,8 @@ class GymResponse(BaseModel):
     name: str
     facility_type: str
 
+
+# For /gyms/{facility_id}/history
 class OccupancyRecord(BaseModel):
     """Schema for returning a single point in time for a gym"""
     timestamp: datetime
@@ -40,3 +44,25 @@ class OccupancyHistoryResponse(BaseModel):
     facility_id: str
     name: str
     history: List[OccupancyRecord]
+    
+# New - for /gyms/{facility_id}/heatmap
+class HeatmapCell(BaseModel):
+    day_of_week: int   # 0 = Monday, 6 = Sunday ( the DAY - 1)
+    hour: int
+    avg_occupancy: float
+    
+class HeatmapResponse(BaseModel):
+    facility_id: str
+    name: str
+    data: List[HeatmapCell]
+
+# for /gyms/{facility_id}/best-time
+class QuietSlot(BaseModel):
+    day_of_week: int
+    hour: int
+    avg_occupancy: float
+    
+class BestTimeResponse(BaseModel):
+    facility_id: str
+    name: str
+    quietest_slots: List[QuietSlot]  # top N, sorted ascending by the avg_occupancy 

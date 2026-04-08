@@ -64,16 +64,7 @@ def get_different_user_agent():
 
 
 def scrape():
-    
-    """
-    Commented out
-    """
-    # if not wake_up_backend():
-    #     print("Backend failed to wake up. Aborting scrape to save github action minutes.")
-    #     return
-    
-    
-    
+        
     with sync_playwright()as p:
         
         browser = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled",

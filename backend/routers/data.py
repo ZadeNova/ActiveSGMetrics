@@ -5,6 +5,9 @@ from models.gym import GymMetaData, GymOccupancyData
 from schemas.schemas import GymResponse, OccupancyHistoryResponse, OccupancyRecord
 from typing import List
 
+"""
+Its the HTTP layer, for URL params, response codes, pydantic response models
+"""
 
 router = APIRouter()
 
