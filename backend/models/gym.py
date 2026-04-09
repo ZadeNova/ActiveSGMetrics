@@ -44,7 +44,7 @@ Let me add it tomorrow, i wanna sleep
 class GymOccupancyData(SQLModel, table=True):    
     __tablename__ = "gym_occupancy"
     __table_args__ = (
-        Index("ix_gym_occupancy_facility_id_timestamp", "facility_id", "timestamp")
+        Index("ix_gym_occupancy_facility_id_timestamp", "facility_id", "timestamp"),
     )
     
     
