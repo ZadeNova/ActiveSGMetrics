@@ -66,3 +66,16 @@ class BestTimeResponse(BaseModel):
     facility_id: str
     name: str
     quietest_slots: List[QuietSlot]  # top N, sorted ascending by the avg_occupancy 
+    
+    
+class AnomalyResponse(BaseModel):
+    facility_id: str
+    name: str
+    is_anomaly: bool
+    current_occupancy: int
+    historical_mean: float
+    z_score: float
+    severity: str
+    timestamp: datetime
+    day_of_week: int
+    hour: int

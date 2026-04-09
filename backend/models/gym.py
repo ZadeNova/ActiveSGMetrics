@@ -1,7 +1,7 @@
 # For SQL 
 # The SQL model for Gymrecords
 
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Index
 from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime
 from typing import Optional, List
@@ -43,7 +43,9 @@ Let me add it tomorrow, i wanna sleep
 
 class GymOccupancyData(SQLModel, table=True):    
     __tablename__ = "gym_occupancy"
-    
+    __table_args__ = (
+        Index("ix_gym_occupancy_facility_id_timestamp", "facility_id", "timestamp")
+    )
     
     
     id: Optional[int] = Field(default=None, primary_key=True)
