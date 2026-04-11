@@ -1,14 +1,14 @@
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
-import requests
 from datetime import date, datetime , timezone
 from dotenv import load_dotenv
 import os, sys
-import random, time
 import hashlib
-from sqlmodel import create_engine, Session, select
+from sqlmodel import create_engine, Session
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.pool import NullPool
 from backend.config import settings
+
 
 load_dotenv()
 # Get the current script's directory 
@@ -23,16 +23,6 @@ if project_root not in sys.path:
 from backend.models.gym import GymMetaData , GymOccupancyData
 
 
-def get_base_url():
-    """Automatically toggles between local and production URLs."""
-    if os.getenv("GITHUB_ACTIONS") == "true":
-        return settings.PROD_BACKEND_URL
-    return settings.LOCAL_BACKEND_URL
-
-BASE_URL = get_base_url()
-#BASE_URL = os.getenv("LOCAL_BACKEND_URL")
-HEALTH_URL = f"{BASE_URL}/api/v1/health"
-INGEST_URL = f"{BASE_URL}/api/v1/ingestdata"
 
 
 DATABASE_URL = settings.SUPABASE_DATABASE_URL
@@ -53,8 +43,6 @@ USER_AGENTS = [
     "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
 ]
-
-
 
 
 def get_different_user_agent():
@@ -150,21 +138,15 @@ def ingest_gym_data(gyms_list):
     batch_time = datetime.now(timezone.utc).replace(second=0, microsecond=0)
     with Session(engine) as session:
         try:
-           
-            existing_ids = session.exec(select(GymMetaData.facility_id)).all()
-            existing_ids_set = set(existing_ids)
             
             for item in gyms_list:
+                stmt = pg_insert(GymMetaData).values(
+                    facility_id=item["id"],
+                    name=item["name"],
+                    facility_type=item["type"]
+                ).on_conflict_do_nothing(index_elements=["facility_id"])
+                session.exec(stmt)
                 
-                if item["id"] not in existing_ids_set:
-                    new_metadata = GymMetaData(
-                        facility_id=item["id"],
-                        name=item["name"],
-                        facility_type=item["type"]
-                    )                
-                    session.add(new_metadata)
-                    existing_ids_set.add(item["id"])
-                    
                 occupancy_record = GymOccupancyData(
                     facility_id=item["id"],
                     occupancy_percentage=item["capacityPercentage"],
