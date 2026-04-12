@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import type { HeatmapResponse } from "@/types";
+import React from "react";
 
 interface HeatmapProps {
 	facilityId: string;
@@ -66,11 +67,8 @@ export default function Heatmap({ facilityId }: HeatmapProps) {
 						</div>
 					))}
 					{DAYS.map((day, dayIndex) => (
-						<>
-							<div
-								key={day}
-								className="text-xs text-gray-400 flex items-center"
-							>
+						<React.Fragment key={day}>
+							<div className="text-xs text-gray-400 flex items-center">
 								{day}
 							</div>
 							{HOURS.map((hour) => {
@@ -83,7 +81,7 @@ export default function Heatmap({ facilityId }: HeatmapProps) {
 									/>
 								);
 							})}
-						</>
+						</React.Fragment>
 					))}
 				</div>
 			</div>
