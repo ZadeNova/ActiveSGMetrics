@@ -54,3 +54,17 @@ export interface AnomalyResponse {
 	day_of_week: number;
 	hour: number;
 }
+
+export interface HourlyReading {
+	hour: number;
+	occupancy_percentage: number;
+}
+
+export interface DayOverDayResponse {
+	facility_id: string;
+	name: string;
+	today_label: string;
+	last_week_label: string;
+	today: HourlyReading[];
+	last_week: HourlyReading[];
+}

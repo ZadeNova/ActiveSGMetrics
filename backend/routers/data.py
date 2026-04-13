@@ -38,3 +38,7 @@ def get_best_time(facility_id: str, db: Session = Depends(get_session), limit: i
 @router.get("/gyms/{facility_id}/anomaly", response_model=AnomalyResponse)
 def get_anomaly(facility_id: str, db: Session = Depends(get_session)):
     return analytics_service.get_anomaly(facility_id=facility_id, db=db)
+
+@router.get("/gyms/{facility_id}/day-over-day", response_model=DayOverDayResponse)
+def get_day_over_day(facility_id: str, db: Session = Depends(get_session)):
+    return analytics_service.get_day_over_day(facility_id=facility_id, db=db)

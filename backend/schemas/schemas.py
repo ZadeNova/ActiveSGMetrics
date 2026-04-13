@@ -79,3 +79,18 @@ class AnomalyResponse(BaseModel):
     timestamp: datetime
     day_of_week: int
     hour: int
+    
+class HourlyReading(BaseModel):
+    """A single hour's average occupancy used in day over day comparison"""
+    hour: int
+    occupancy_percentage: float
+    
+class DayOverDayResponse(BaseModel):
+    """Compares today's hourly occupancy against the same day last week"""
+    facility_id: str
+    name: str
+    today_label: str
+    last_week_label: str
+    today: list[HourlyReading]
+    last_week: list[HourlyReading]
+        

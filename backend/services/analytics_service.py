@@ -179,8 +179,58 @@ def get_anomaly(facility_id: str, db: Session) -> AnomalyResponse:
         hour=hour,
     ) 
         
+
         
+def get_day_over_day(facility_id: str, db: Session) -> DayOverDayResponse:
+    gym = get_gym_by_id(facility_id, db)
     
+    now_utc = datetime.now(timezone.utc)
+    now_sgt = now_utc.astimezone(SGT)
+    today_start = now_sgt.replace(hour=0, minute=0, second=0, microsecond=0)
+    last_week_start = today_start - timedelta(days=7)
+
+    today_results = db.exec(
+        select(
+            extract("hour", func.timezone("Asia/Singapore", GymOccupancyData.timestamp)).label("hour"),
+            func.avg(GymOccupancyData.occupancy_percentage).label("avg_occupancy")
+        )
+        .where(GymOccupancyData.facility_id == facility_id)
+        .where(GymOccupancyData.timestamp >= today_start) # lower bound of time
+        .where(GymOccupancyData.timestamp < today_start + timedelta(days=1)) # upper bound of time
+        .group_by("hour")
+        .order_by("hour")
+    ).all()
+    
+    last_week_results = db.exec(
+        select(
+            extract("hour", func.timezone("Asia/Singapore", GymOccupancyData.timestamp)).label("hour"),
+            func.avg(GymOccupancyData.occupancy_percentage).label("avg_occupancy")
+        )
+        .where(GymOccupancyData.facility_id == facility_id)
+        .where(GymOccupancyData.timestamp >= last_week_start) # lower bound of time
+        .where(GymOccupancyData.timestamp < last_week_start + timedelta(days=1)) # upper bound of time
+        .group_by("hour")
+        .order_by("hour")
+    ).all()
+    
+    return DayOverDayResponse(
+        facility_id = facility_id,
+        name = gym.name,
+        today_label= today_start.strftime("%a %d %b"),
+        last_week_label= last_week_start.strftime("%a %d %b"),
+        today= [
+            HourlyReading(
+                hour= t.hour, occupancy_percentage= t.avg_occupancy,
+            )
+            for t in today_results
+        ],
+        last_week=[
+            HourlyReading(
+                hour = l.hour, occupancy_percentage= l.avg_occupancy
+            )
+            for l in last_week_results
+        ]
+    )
     
     
     

@@ -5,6 +5,7 @@ import History from "@/components/History";
 import Heatmap from "@/components/Heatmap";
 import BestTime from "@/components/BestTime";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import DayOverDay from "@/components/DayOverDay";
 
 interface AnalyticsPanelProps {
 	facilityId: string;
@@ -31,6 +32,10 @@ export default function AnalyticsPanel({
 					<BestTime facilityId={facilityId} />
 				</ErrorBoundary>
 			</div>
+
+			<ErrorBoundary fallbackMessage="Failed to load day comparison.">
+				<DayOverDay facilityId={facilityId} />
+			</ErrorBoundary>
 
 			<ErrorBoundary fallbackMessage="Failed to load heatmap.">
 				<Heatmap facilityId={facilityId} />
