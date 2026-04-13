@@ -1,6 +1,6 @@
 export default function Loading() {
 	return (
-		<div className="flex h-screen items-center justify-center text-sm text-gray-400">
+		<div className="flex h-screen items-center justify-center text-sm text-text-muted">
 			Loading gyms...
 		</div>
 	);
