@@ -1,9 +1,10 @@
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
-from datetime import date, datetime , timezone
+from datetime import datetime , timezone
 from dotenv import load_dotenv
 import os, sys
-import hashlib
+import random
+import time
 from sqlmodel import create_engine, Session
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.pool import NullPool
@@ -39,20 +40,21 @@ engine = create_engine(
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
 ]
 
 
 def get_different_user_agent():
-    today = date.today().isoformat()
-    hash_val = int(hashlib.sha256(today.encode()).hexdigest(), 16)
-    return USER_AGENTS[hash_val % len(USER_AGENTS)]
+    return random.choice(USER_AGENTS)
 
 
 def scrape():
-        
+    
+    time.sleep(random.uniform(0,60))
+    
     with sync_playwright()as p:
         
         browser = p.chromium.launch(headless=True, args=["--disable-blink-features=AutomationControlled",
