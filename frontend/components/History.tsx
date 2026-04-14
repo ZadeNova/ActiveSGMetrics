@@ -72,7 +72,7 @@ export default function History({ facilityId }: HistoryProps) {
 	const { data, error, isLoading } = useSWR<HistoryResponse>(
 		`${process.env.NEXT_PUBLIC_API_URL}/api/v1/gyms/${facilityId}/history?range=${range}`,
 		fetcher,
-		{ refreshInterval: 7_200_000 },
+		{ refreshInterval: 3_600_000 },
 	);
 
 	if (isLoading) {

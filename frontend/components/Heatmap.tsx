@@ -76,7 +76,7 @@ export default function Heatmap({ facilityId }: HeatmapProps) {
 	const { data, error, isLoading } = useSWR<HeatmapResponse>(
 		`${process.env.NEXT_PUBLIC_API_URL}/api/v1/gyms/${facilityId}/heatmap`,
 		fetcher,
-		{ refreshInterval: 7_200_000 },
+		{ refreshInterval: 3_600_000 },
 	);
 
 	if (isLoading) {

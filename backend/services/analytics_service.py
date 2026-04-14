@@ -12,19 +12,12 @@ Business Logic: For SQL querying the database.
 
 SGT_OFFSET = 8
 SGT = timezone(timedelta(hours=SGT_OFFSET))
+RANGE_DICT = {"1D": timedelta(days=1), "3D": timedelta(days=3), "7D": timedelta(days=7), "30D": timedelta(days=30)}
+
 
 def get_heatmap(facility_id: str, db: Session) -> HeatmapResponse:
     gym = get_gym_by_id(facility_id, db)
-    results = db.exec(
-        select(
-            ((extract("dow", func.timezone("Asia/Singapore", GymOccupancyData.timestamp)) + 6) % 7).label("day_of_week"),
-            extract("hour", func.timezone("Asia/Singapore", GymOccupancyData.timestamp)).label("hour"),
-            func.avg(GymOccupancyData.occupancy_percentage).label("avg_occupancy")
-        )
-        .where(GymOccupancyData.facility_id == facility_id)
-        .group_by("day_of_week", "hour")
-        .order_by("day_of_week", "hour")
-    ).all()
+    results = _query_heatmap(facility_id=facility_id, db=db)
         
     return HeatmapResponse(
         facility_id = gym.facility_id,
@@ -75,21 +68,17 @@ def get_all_gyms(db: Session) -> list[GymResponse]:
 
 def get_history(facility_id: str, range: str, db: Session) -> OccupancyHistoryResponse:
     
-    range_dict = {"1D": timedelta(days=1), "3D": timedelta(days=3), "7D": timedelta(days=7), "30D": timedelta(days=30)}
     
-    if range not in range_dict:
+    
+    if range not in RANGE_DICT:
         raise HTTPException(status_code=422, detail="Invalid range. Must be 1D, 3D, 7D, or 30D")
     
     gym = get_gym_by_id(facility_id=facility_id, db=db)
-    delta = range_dict[range]
+    
+    delta = RANGE_DICT[range]
     cutoff = datetime.now(timezone.utc) - delta
-
-    results = db.exec(
-        select(GymOccupancyData)
-        .where(GymOccupancyData.facility_id == facility_id)
-        .where(GymOccupancyData.timestamp >= cutoff)
-        .order_by(GymOccupancyData.timestamp.asc())
-    ).all()
+    
+    results = _query_history(facility_id=facility_id, cutoff=cutoff, db=db)
     
     return OccupancyHistoryResponse(
         facility_id=gym.facility_id,
@@ -233,7 +222,65 @@ def get_day_over_day(facility_id: str, db: Session) -> DayOverDayResponse:
     )
     
     
+def compare_history(facility_ids: list[str], range: str, db: Session) -> CompareHistoryResponse:
+    if len(facility_ids) > 3:
+        raise HTTPException(status_code=422, detail="Cannot compare more than 3 gyms at once")
     
+    if range not in RANGE_DICT:
+        raise HTTPException(status_code=422, detail="Invalid range. Must be 1D, 3D, 7D, 30D")
+
+    delta = RANGE_DICT[range]
+    cutoff = datetime.now(timezone.utc) - delta
+    
+    result = []
+    
+    for id in facility_ids:
+        gym = get_gym_by_id(facility_id = id, db = db)
+        gym_history = _query_history(facility_id=id, cutoff=cutoff, db=db)
+        result.append(
+            GymHistorySeries(
+                facility_id=id,
+                name=gym.name,
+                history=
+                [
+                    OccupancyRecord(
+                        timestamp= gymhistory.timestamp.astimezone(SGT),
+                        occupancy_percentage= gymhistory.occupancy_percentage,
+                        is_closed=gymhistory.is_closed
+                        
+                    ) for gymhistory in gym_history
+                ]   
+            )
+        )
+    return CompareHistoryResponse(gyms=result)
+        
+
+def compare_heatmap(facility_ids: list[str], db:Session) -> CompareHeatmapResponse:
+    
+    if len(facility_ids) > 3:
+        raise HTTPException(status_code=422, detail="Cannot compare more than 3 gyms at once")
+    
+    result = []
+    for id in facility_ids:
+        gym = get_gym_by_id(facility_id=id, db=db)
+        gym_heatmap = _query_heatmap(facility_id=id, db=db)
+        result.append(
+            GymHeatmapSeries(
+                facility_id=id,
+                name = gym.name,
+                data = [
+                    HeatmapCell(
+                        day_of_week=_.day_of_week,
+                        hour = _.hour,
+                        avg_occupancy= _.avg_occupancy,
+                    )
+                    for _ in gym_heatmap
+                ]
+            )
+        )
+    
+    return CompareHeatmapResponse(gyms=result)
+
 
 # Helper function    
 def get_gym_by_id(facility_id:str, db: Session) -> GymMetaData:
@@ -242,6 +289,28 @@ def get_gym_by_id(facility_id:str, db: Session) -> GymMetaData:
         raise HTTPException(status_code=404, detail="Facility not found")
     return gym
         
+
+def _query_history(facility_id: str, cutoff: datetime, db: Session) -> list[GymOccupancyData]:
     
+    results = db.exec(
+        select(GymOccupancyData)
+        .where(GymOccupancyData.facility_id == facility_id)
+        .where(GymOccupancyData.timestamp >= cutoff)
+        .order_by(GymOccupancyData.timestamp.asc())
+    ).all()
     
+    return results
     
+def _query_heatmap(facility_id: str, db: Session) -> list[any]:
+    results = db.exec(
+        select(
+            ((extract("dow", func.timezone("Asia/Singapore", GymOccupancyData.timestamp)) + 6) % 7).label("day_of_week"),
+            extract("hour", func.timezone("Asia/Singapore", GymOccupancyData.timestamp)).label("hour"),
+            func.avg(GymOccupancyData.occupancy_percentage).label("avg_occupancy")
+        )
+        .where(GymOccupancyData.facility_id == facility_id)
+        .group_by("day_of_week", "hour")
+        .order_by("day_of_week", "hour")
+    ).all()
+    
+    return results

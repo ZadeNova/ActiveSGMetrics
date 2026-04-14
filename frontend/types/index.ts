@@ -68,3 +68,23 @@ export interface DayOverDayResponse {
 	today: HourlyReading[];
 	last_week: HourlyReading[];
 }
+
+export interface GymHistorySeries {
+	facility_id: string;
+	name: string;
+	history: OccupancyRecord[]; // reuse existing
+}
+
+export interface CompareHistoryResponse {
+	gyms: GymHistorySeries[];
+}
+
+export interface GymHeatmapSeries {
+	facility_id: string;
+	name: string;
+	data: HeatmapEntry[]; // reuse existing
+}
+
+export interface CompareHeatmapResponse {
+	gyms: GymHeatmapSeries[];
+}

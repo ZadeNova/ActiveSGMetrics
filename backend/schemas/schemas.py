@@ -94,3 +94,23 @@ class DayOverDayResponse(BaseModel):
     today: list[HourlyReading]
     last_week: list[HourlyReading]
         
+class GymHistorySeries(BaseModel):
+    """One gym's history data within a comparison response"""
+    facility_id: str
+    name: str
+    history: list[OccupancyRecord] 
+
+class CompareHistoryResponse(BaseModel):
+    """Multiple gym's history data for overlay comparison"""
+    gyms: list[GymHistorySeries]
+    
+class GymHeatmapSeries(BaseModel):
+    """One Gym's heatmap data within a comparison response"""
+    facility_id: str
+    name: str
+    data: list[HeatmapCell]
+
+class CompareHeatmapResponse(BaseModel):
+    """Multiple gym's heatmap data for side by side comparison"""
+    gyms: list[GymHeatmapSeries]
+    
