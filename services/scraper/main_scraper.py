@@ -29,7 +29,7 @@ from backend.models.gym import GymMetaData , GymOccupancyData
 DATABASE_URL = settings.SUPABASE_DATABASE_URL
 # Need to manually change it to SUPABASE_DEV_DATABASE_URL if testing in local
 
-#DATABASE_URL = os.getenv("SUPABASE_DEV_DATABASE_URL")
+
 engine = create_engine(
     DATABASE_URL,
     poolclass=NullPool,
