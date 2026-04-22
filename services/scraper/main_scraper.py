@@ -1,7 +1,6 @@
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
 from datetime import datetime , timezone
-from dotenv import load_dotenv
 import os, sys
 import random
 import time
@@ -11,7 +10,6 @@ from sqlalchemy.pool import NullPool
 from backend.config import settings
 
 
-load_dotenv()
 # Get the current script's directory 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
