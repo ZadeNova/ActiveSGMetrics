@@ -4,6 +4,7 @@ from models.gym import GymOccupancyData, GymMetaData
 from schemas.schemas import *
 from datetime import timezone, timedelta, datetime
 from fastapi import HTTPException
+from typing import NamedTuple
 
 
 """
@@ -13,6 +14,12 @@ Business Logic: For SQL querying the database.
 SGT_OFFSET = 8
 SGT = timezone(timedelta(hours=SGT_OFFSET))
 RANGE_DICT = {"1D": timedelta(days=1), "3D": timedelta(days=3), "7D": timedelta(days=7), "30D": timedelta(days=30)}
+
+class HeatmapRow(NamedTuple):
+    day_of_week: int
+    hour: int
+    avg_occupancy: float
+    
 
 
 def get_heatmap(facility_id: str, db: Session) -> HeatmapResponse:
@@ -301,7 +308,7 @@ def _query_history(facility_id: str, cutoff: datetime, db: Session) -> list[GymO
     
     return results
     
-def _query_heatmap(facility_id: str, db: Session) -> list[any]:
+def _query_heatmap(facility_id: str, db: Session) -> list[HeatmapRow]:
     results = db.exec(
         select(
             ((extract("dow", func.timezone("Asia/Singapore", GymOccupancyData.timestamp)) + 6) % 7).label("day_of_week"),
