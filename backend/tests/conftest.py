@@ -12,13 +12,12 @@ TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL", "postgresql://user:passw
 os.environ.setdefault("SUPABASE_DATABASE_URL", TEST_DATABASE_URL)
 os.environ.setdefault("ACTIVE_SG_API", "http://test-placeholder")
 
-from main import app
-from database import get_session
-from models.gym import GymMetaData, GymOccupancyData
+from main import app  # noqa: E402
+from database import get_session # noqa: E402
+from models.gym import GymMetaData, GymOccupancyData # noqa: E402
 
-from sqlmodel import delete
+from sqlmodel import delete # noqa: E402
 
-from sqlmodel import delete
 
 # autouse=True — runs automatically after every single test, no need to request it explicitly.
 # Deletes all rows in dependency order (child table first, then parent)

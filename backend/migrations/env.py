@@ -5,7 +5,6 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from models.gym import GymMetaData, GymOccupancyData
 from sqlmodel import SQLModel
 from database import DATABASE_URL
 

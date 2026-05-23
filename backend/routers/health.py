@@ -12,7 +12,7 @@ def health_check(db: Session = Depends(get_session)):
     try:
         db.exec(text("SELECT 1"))
         return {"status": "ok", "database": "online"}
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=503, detail="Database connection failed")
     
 

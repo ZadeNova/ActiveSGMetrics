@@ -1,7 +1,17 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 from database import get_session
-from schemas.schemas import *
+from schemas.schemas import (
+    GymResponse,
+    CompareHistoryResponse,
+    CompareHeatmapResponse,
+    OccupancyHistoryResponse,
+    HeatmapResponse,
+    BestTimeResponse,
+    AnomalyResponse,
+    DayOverDayResponse,
+)
+
 from typing import List
 from services import analytics_service
 

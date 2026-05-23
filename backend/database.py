@@ -1,4 +1,3 @@
-import os
 from sqlmodel import create_engine, Session
 from sqlalchemy.pool import NullPool
 from config import settings

@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import ingest, data, health
-from sqlmodel import SQLModel
+from routers import data, health
 from config import settings
 
 

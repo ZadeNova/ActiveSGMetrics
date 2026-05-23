@@ -1,7 +1,22 @@
 from sqlalchemy import func, extract
 from sqlmodel import select, Session
 from models.gym import GymOccupancyData, GymMetaData
-from schemas.schemas import *
+from schemas.schemas import (
+    HeatmapResponse,
+    HeatmapCell,
+    QuietSlot,
+    BestTimeResponse,
+    GymResponse,
+    OccupancyHistoryResponse,
+    OccupancyRecord,
+    AnomalyResponse,
+    DayOverDayResponse,
+    HourlyReading,
+    CompareHistoryResponse,
+    GymHistorySeries,
+    CompareHeatmapResponse,
+    GymHeatmapSeries,
+)
 from datetime import timezone, timedelta, datetime
 from fastapi import HTTPException
 from typing import NamedTuple
@@ -222,9 +237,9 @@ def get_day_over_day(facility_id: str, db: Session) -> DayOverDayResponse:
         ],
         last_week=[
             HourlyReading(
-                hour = l.hour, occupancy_percentage= l.avg_occupancy
+                hour = row.hour, occupancy_percentage= row.avg_occupancy
             )
-            for l in last_week_results
+            for row in last_week_results
         ]
     )
     
