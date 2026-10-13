@@ -4,7 +4,7 @@ from config import settings
 
 
 
-DATABASE_URL = settings.SUPABASE_DATABASE_URL
+DATABASE_URL = settings.DATABASE_URL
 
 
 # Nullpull forces a fresh new connection to supabase for every new request.

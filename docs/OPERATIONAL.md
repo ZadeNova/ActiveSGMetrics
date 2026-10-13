@@ -37,3 +37,21 @@ don't re-derive what's already answered here.
   `chromium-headless-shell` binary alongside regular Chromium (same
   release, bundled together) — no separate install target needed for the
   headless-shell channel used in `main_scraper.py`.
+- The local `.venv`'s console-script shebangs (not just the pre-commit
+  hook) are stale — they hardcode the pre-move path
+  `/home/nova/Personal/side_projects/ActiveSGMetrics/.venv/bin/python`.
+  This breaks any pip-installed Python entry-point script run directly
+  (`.venv/bin/alembic`, `.venv/bin/pip`, `.venv/bin/pytest`) with
+  `cannot execute: required file not found`. `ruff` is unaffected — it's a
+  native binary with no shebang. Workaround: always invoke via
+  `.venv/bin/python -m <module>` instead of the direct executable. A full
+  fix would mean recreating the venv; not done yet, not blocking.
+- Local (non-Docker) scraper runs need two things pydantic-settings and
+  the `backend.*` imports want differently: `config.py`'s
+  `env_file=".env"` resolves relative to **CWD** (needs `backend/` as
+  CWD to find `backend/.env`), while `main_scraper.py`'s
+  `from backend.config import ...` needs the **repo root** importable.
+  Resolved by running with CWD=`backend/` and `PYTHONPATH=..`:
+  `cd backend && PYTHONPATH=.. ../.venv/bin/python ../services/scraper/main_scraper.py`.
+  Verified end-to-end against live Neon: cleared Cloudflare, ingested 30
+  gym records, confirmed via direct query.

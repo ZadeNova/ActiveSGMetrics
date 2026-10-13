@@ -4,11 +4,10 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # Strictly required
-    SUPABASE_DATABASE_URL: str
+    DATABASE_URL: str
     ACTIVE_SG_API: str
     
     # Optional
-    SUPABASE_DEV_DATABASE_URL: Optional[str] = None
     WEBSITE_URL: Optional[str] = None
     
     @computed_field

@@ -37,7 +37,7 @@ jobs:
         env:
           PYTHONPATH: "."
           WEBSITE_URL: ${{ secrets.WEBSITE_URL }}
-          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           ACTIVE_SG_API: ${{ secrets.ACTIVE_SG_API }}
           GITHUB_ACTIONS: "true"
         run: python services/scraper/main_scraper.py

@@ -4,12 +4,64 @@ Working plan for getting ActiveSGMetrics running again, redesigned instead of
 band-aided. This is a living checklist, not a spec — update it as decisions
 change. See `CLAUDE.md` for the principles/working style this plan should
 follow (discuss trade-offs before implementing, keep it simple, no dead code,
-review changes after writing them) and `claude_info.md` for earlier advice
-this plan supersedes in places.
+review changes after writing them, sync docs after major work) and
+`docs/OPERATIONAL.md` for the durable facts/decisions log.
 
 Items marked **(DECISION NEEDED)** are blocking — don't implement that item
 until it's resolved. Everything else reflects decisions already made in
 discussion.
+
+---
+
+## Next steps — major milestones
+
+**Milestone 1 — Scraper live on the Pi** *(in progress — DB is live and
+proven end-to-end locally; not yet deployed to the Pi)*
+- [x] Neon project created, region `ap-southeast-1`, direct connection
+      string in `backend/.env`
+- [x] `alembic upgrade head` run against it — `gym_metadata`/
+      `gym_occupancy` + composite index confirmed present
+- [x] Scraper tested locally (not containerized, not on the Pi) — cleared
+      Cloudflare, ingested 30 real gym records, verified by direct query
+      against Neon. See `docs/OPERATIONAL.md` for the exact invocation
+      (local runs need `PYTHONPATH=..` from inside `backend/`)
+- [ ] Follow `services/scraper/DEPLOY.md` on the Pi: build the image, one
+      manual test run, confirm a real row lands in Neon
+- [ ] Create a healthchecks.io account, set `HEALTHCHECK_PING_URL`
+- [ ] Install the systemd timer, verify one real unattended 8am-9pm cycle
+- [ ] Decommission the old GitHub Actions scraper workflow
+      (`.github/workflows/scraper.yml`) once the Pi's reliability is
+      confirmed. Note: `SUPABASE_DATABASE_URL` was renamed to `DATABASE_URL`
+      repo-wide (config.py, database.py, main_scraper.py, .env,
+      docker-compose.yml, ci.yml, scraper.yml, conftest.py — all verified
+      via ruff + full test suite + a real scraper run against Neon) but the
+      actual **GitHub repo secret** is still named `SUPABASE_DATABASE_URL`;
+      rename it on GitHub's side if this workflow needs to run again before
+      decommissioning
+
+**Milestone 2 — Backend cleanup** *(not started)*
+- Delete dead code: `backend/routers/ingest.py`, `backend/services/ingest_service.py`
+- Add `structlog` + `pytest-cov`, update CORS `ALLOWED_ORIGINS`
+- Fix README's stale claims; add an Alembic CI check; widen lint scope
+  repo-wide
+
+**Milestone 3 — Backend on Lambda** *(not started — needs an AWS account
+ready)*
+- Add Mangum, package as a zip (arm64, manylinux-targeted dependencies)
+- Write the Terraform (Lambda, IAM role, concurrency cap, billing alarm, S3
+  state backend) — you run `plan`/`apply` yourself
+- Measure real cold start once deployed, don't assume
+
+**Milestone 4 — Frontend migration** *(not started)*
+- Scaffold Vite + React, port the existing components over
+- Point the fetcher at the live Lambda Function URL
+- Deploy to Vercel
+
+**Milestone 5 — Polish** *(not started)*
+- README architecture diagram
+- Final end-to-end verification across all four pieces together
+
+Detailed reasoning and specifics for each item are in the sections below.
 
 ---
 

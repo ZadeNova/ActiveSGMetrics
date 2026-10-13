@@ -15,7 +15,7 @@ Create `/home/zade/activesg/scraper.env` with the real values (this file
 is never committed — it's secrets):
 
 ```
-SUPABASE_DATABASE_URL=<Neon connection string>
+DATABASE_URL=<Neon connection string>
 ACTIVE_SG_API=<value from existing .env>
 WEBSITE_URL=https://activesg.gov.sg/gym-pool-crowd
 HEALTHCHECK_PING_URL=<your healthchecks.io ping URL, once you've created one>

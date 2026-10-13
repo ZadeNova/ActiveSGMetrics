@@ -9,7 +9,7 @@ TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL", "postgresql://user:passw
 
 # Set env vars BEFORE importing app — config.py creates Settings() at module level,
 # so these must exist in the environment at import time
-os.environ.setdefault("SUPABASE_DATABASE_URL", TEST_DATABASE_URL)
+os.environ.setdefault("DATABASE_URL", TEST_DATABASE_URL)
 os.environ.setdefault("ACTIVE_SG_API", "http://test-placeholder")
 
 from main import app  # noqa: E402

@@ -26,7 +26,7 @@ log = structlog.get_logger()
 DEBUG_DIR = Path("/app/debug")
 MAX_DEBUG_SCREENSHOTS = 3
 
-DATABASE_URL = settings.SUPABASE_DATABASE_URL
+DATABASE_URL = settings.DATABASE_URL
 
 engine = create_engine(
     DATABASE_URL,
