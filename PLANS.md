@@ -25,9 +25,10 @@ proven end-to-end locally; not yet deployed to the Pi)*
       Cloudflare, ingested 30 real gym records, verified by direct query
       against Neon. See `docs/OPERATIONAL.md` for the exact invocation
       (local runs need `PYTHONPATH=..` from inside `backend/`)
+- [x] Monitoring: failure-only email via Gmail SMTP, tested end-to-end
+      (healthchecks.io dropped — see `docs/OPERATIONAL.md`)
 - [ ] Follow `services/scraper/DEPLOY.md` on the Pi: build the image, one
       manual test run, confirm a real row lands in Neon
-- [ ] Create a healthchecks.io account, set `HEALTHCHECK_PING_URL`
 - [ ] Install the systemd timer, verify one real unattended 8am-9pm cycle
 - [ ] Decommission the old GitHub Actions scraper workflow
       (`.github/workflows/scraper.yml`) once the Pi's reliability is
@@ -211,22 +212,15 @@ Detailed reasoning and specifics for each item are in the sections below.
 - [ ] Widen CI's lint scope to the whole repo, not just `backend/`
 - [x] Add structured logging (`structlog`) — bare `print()` calls replaced
       throughout `main_scraper.py`
-- [ ] Monitoring: **external heartbeat ping only** (e.g. healthchecks.io,
-      free tier) — `ping_healthcheck()` is implemented in
-      `main_scraper.py` and wired to both the success and failure paths;
-      still needs you to actually create a healthchecks.io account and
-      set `HEALTHCHECK_PING_URL` before it does anything live. The scraper
-      pings it after each successful run; a missed ping alerts you by
-      email. Not in the scraper's critical path
-      (if the ping service is ever down, the scraper still runs and
-      writes data — it just can't alert you), so it doesn't recreate the
-      cron-job.org single-point-of-failure problem. Decided against the
-      `scraper_runs` table/`/health` extension for now — simpler, and
-      doesn't require an Alembic migration before it's useful. Correction
-      to the original justification: this isn't about re-catching the
-      2026-06-01 incident (that was a deliberate stop, not a silent
-      failure) — it's for genuine future unintended failures (IP block,
-      Pi hardware issue, Neon outage, a bug) that haven't happened yet
+- [x] Monitoring: **failure-only email via Gmail SMTP** (revised away
+      from healthchecks.io to avoid a new external dependency).
+      `send_failure_email()` implemented in `main_scraper.py`, stdlib
+      `smtplib`/`email` only, no new pip dependency. `ALERT_EMAIL_FROM`/
+      `ALERT_EMAIL_TO`/`ALERT_EMAIL_APP_PASSWORD` set in `config.py` and
+      `backend/.env`. **Tested end-to-end**: App Password generated for
+      `calypsolunasol@gmail.com`, forced `send_failure_email()` call,
+      email confirmed received. Known gap, accepted: only catches "ran
+      and threw," not total Pi silence. See `docs/OPERATIONAL.md`
 - [ ] Acknowledged, not solved by infrastructure: there's no guarantee
       against the target site eventually blocking this specific
       residential IP too. The goal is "common failure mode (datacenter
@@ -238,8 +232,13 @@ Detailed reasoning and specifics for each item are in the sections below.
 ## Decisions log (all settled — nothing left blocking)
 
 - Neon secret in Lambda → plain environment variable.
-- Scraper monitoring → external heartbeat ping only (healthchecks.io-style),
-  no `scraper_runs` table for now.
+- Scraper monitoring → **revised**: healthchecks.io dropped (reduce
+  external dependencies); failure-only email via Gmail SMTP instead,
+  using a dedicated `calypsolunasol@gmail.com` account, no new third-party
+  signup. No `scraper_runs` table. Known gap, accepted: this only catches
+  "ran and threw an exception" — total silence (Pi offline/dead) isn't
+  covered, since nothing can alert if nothing can run. See
+  `docs/OPERATIONAL.md`.
 - Pi execution → user runs commands themselves; Claude prepares scripts/
   files, user copies them over and reports back errors (no SSH access
   granted).

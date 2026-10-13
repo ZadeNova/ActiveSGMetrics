@@ -46,6 +46,19 @@ don't re-derive what's already answered here.
   native binary with no shebang. Workaround: always invoke via
   `.venv/bin/python -m <module>` instead of the direct executable. A full
   fix would mean recreating the venv; not done yet, not blocking.
+- Monitoring approach reversed: healthchecks.io was planned, then dropped
+  in favor of failure-only email (Gmail SMTP, stdlib only) to avoid adding
+  a new external dependency. Important correction made at this point: the
+  original justification for monitoring at all had drifted into claiming
+  cron-job.org "failed silently" — it didn't. The user deliberately and
+  visibly stopped the trigger chain themselves after diagnosing the
+  Cloudflare block; there is no precedent in this project of an external
+  dependency silently failing unnoticed. The real, narrower justification
+  for any monitoring is purely forward-looking (future IP block, Pi
+  hardware/power failure, Neon outage, a bug), not re-catching something
+  that already happened. Accepted gap: email-on-failure only covers "ran
+  and threw an exception" — it cannot catch total Pi silence, since
+  nothing can send an alert if nothing can run.
 - Local (non-Docker) scraper runs need two things pydantic-settings and
   the `backend.*` imports want differently: `config.py`'s
   `env_file=".env"` resolves relative to **CWD** (needs `backend/` as

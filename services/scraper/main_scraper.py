@@ -1,9 +1,10 @@
 import random
+import smtplib
 import time
 from datetime import datetime, timezone
+from email.message import EmailMessage
 from pathlib import Path
 
-import requests
 import structlog
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
@@ -71,15 +72,25 @@ def _prune_old_screenshots() -> None:
         stale.unlink()
 
 
-def ping_healthcheck(success: bool) -> None:
-    url = settings.HEALTHCHECK_PING_URL
-    if not url:
+def send_failure_email(error: str) -> None:
+    sender = settings.ALERT_EMAIL_FROM
+    recipient = settings.ALERT_EMAIL_TO
+    app_password = settings.ALERT_EMAIL_APP_PASSWORD
+    if not (sender and recipient and app_password):
         return
-    target = url if success else f"{url}/fail"
+
+    msg = EmailMessage()
+    msg["Subject"] = "ActiveSGMetrics scraper failed"
+    msg["From"] = sender
+    msg["To"] = recipient
+    msg.set_content(f"Scraper run failed:\n\n{error}")
+
     try:
-        requests.get(target, timeout=10)
-    except requests.RequestException as e:
-        log.warning("healthcheck_ping_failed", error=str(e))
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as smtp:
+            smtp.login(sender, app_password)
+            smtp.send_message(msg)
+    except Exception as e:
+        log.warning("failure_email_failed", error=str(e))
 
 
 def scrape():
@@ -180,8 +191,6 @@ def ingest_gym_data(gyms_list):
 if __name__ == "__main__":
     try:
         scrape()
-    except Exception:
-        ping_healthcheck(success=False)
+    except Exception as e:
+        send_failure_email(str(e))
         raise
-    else:
-        ping_healthcheck(success=True)
