@@ -1,0 +1,9 @@
+[Unit]
+Description=Run the ActiveSGMetrics scraper hourly, 8am-9pm SGT
+
+[Timer]
+OnCalendar=*-*-* 08..21:00:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target

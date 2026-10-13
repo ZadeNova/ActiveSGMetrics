@@ -35,8 +35,16 @@ discussion.
       project scope
 - [ ] Add **Mangum** adapter so the existing ASGI app runs on Lambda
       unchanged
-- [ ] Package as a container image for Lambda (simplest path to get
-      `psycopg2`'s native binary right)
+- [ ] Package as a **zip deployment, not a container image** — faster
+      cold start (no image pull/mount step) and skips ECR entirely.
+      Install dependencies with `pip install --platform manylinux2014_aarch64
+      --only-binary=:all: --target ./package` (not a plain local
+      `pip install`) so compiled packages like `psycopg2-binary` and
+      `pydantic-core` match Lambda's actual runtime instead of the dev
+      machine's
+- [ ] Lambda architecture: **arm64/Graviton**, not x86_64 — slightly
+      cheaper per GB-second and consistent with the Pi also being ARM;
+      doesn't change the $0 bill either way, just a deliberate pick
 - [ ] Delete dead code: `backend/routers/ingest.py` and
       `backend/services/ingest_service.py` — both empty, not wired into
       `main.py` since commit `7507296`
@@ -45,11 +53,11 @@ discussion.
       `pytest --cov` fails outright because it isn't installed
 - [ ] Update `ALLOWED_ORIGINS` (CORS) to include the new Vercel origin once
       it exists
-- [ ] Neon connection string: plain Lambda env var vs SSM Parameter Store
-      (SecureString, free tier) — **(DECISION NEEDED)**
-- [ ] Extend `/api/v1/health` to report last scraper run time + record
-      count, backed by a new `scraper_runs` table — **(DECISION NEEDED,
-      see Scraper monitoring below — these are the same decision)**
+- [ ] Neon connection string: **plain Lambda environment variable**
+      (decided — SSM's real advantages, hiding it from console view and
+      rotation without redeploy, mostly matter with multiple IAM
+      principals, which this account doesn't have; SSM would also add a
+      small cold-start cost for little benefit here)
 - [ ] Add an Alembic migration-check job to `ci.yml` (doesn't exist yet)
 - [ ] Measure real Lambda + Mangum cold start once built — don't assume
       "fine for a dashboard," verify it
@@ -69,6 +77,11 @@ discussion.
       deliberately **not** a rate limiter: single-user traffic has no
       fairness problem to solve, only a cost-blowup-from-abuse risk, which
       the concurrency cap already covers at zero extra code
+- [ ] **No provisioned concurrency** — cold start is accepted as-is (to be
+      measured once built, not assumed). Provisioned concurrency would
+      eliminate it but costs real money for idle capacity, which breaks
+      the $0/month goal for a problem that hasn't even been confirmed to
+      exist yet
 - [ ] S3 + CloudFront for the frontend backup path (see Frontend)
 - [ ] **No VPC, subnets, or security groups** — nothing in this
       architecture needs them: Lambda runs in AWS's managed VPC by default,
@@ -101,30 +114,67 @@ discussion.
       timer, replacing the cron-job.org → GitHub `workflow_dispatch` chain
       — removes a third-party dependency with a silently-expiring PAT as a
       side effect
-- [ ] No lightweight-HTTP bypass of the browser — tested and ruled out.
+- [x] Pi confirmed running a 64-bit OS (`uname -m` → `aarch64`) — Playwright
+      only ships ARM64 Chromium builds, not armhf/32-bit, so this was a
+      real go/no-go check, not a formality. Cleared.
+- [x] No lightweight-HTTP bypass of the browser — tested and ruled out.
       The target site fingerprints the TLS handshake itself (no
       `cf_clearance` cookie exists to reuse), so a real browser engine is
       mandatory for every single request, not just the first
-- [ ] Use the headless-shell binary + block images/fonts/media + disable
+- [x] Use the headless-shell binary + block images/fonts/media + disable
       GPU — measured ~572MB peak vs. ~715MB baseline for plain headless
       Chromium; this is close to the realistic floor for a real-browser
       approach, further reduction isn't available without dropping the
-      browser engine entirely
+      browser engine entirely. Implemented in `main_scraper.py`
+      (`channel="chromium-headless-shell"`, `page.route` blocking
+      image/font/media, `--disable-gpu`)
 - [ ] Keep the existing jitter (`time.sleep(random.uniform(0,60))`) —
-      avoids the "fires at exactly :00 every hour, forever" bot signature
-- [ ] Fix `ruff` violations in `services/scraper/main_scraper.py` (E401
-      multiple imports on one line, E402 import-order) — currently
-      invisible to CI since the lint job only checks `backend/`
+      avoids the "fires at exactly :00 every hour, forever" bot signature.
+      Note: reducing run frequency (below) helps volume a little but does
+      **not** meaningfully reduce ban risk on its own — jitter is what
+      actually breaks the pattern; frequency is a separate, legitimate
+      decision (see schedule below)
+- [x] **Scheduler: systemd timer** (confirmed) — `OnCalendar=*-*-* 08..21:00:00`,
+      Pi timezone confirmed as `Asia/Singapore` so this can be written in
+      local time directly, no UTC conversion needed. Matches the
+      project's own original cron window (`30 0-13 * * *` UTC ≈
+      8:30am-9:30pm SGT) — restoring prior intent, not a new constraint.
+      14 runs/day instead of 24
+- [x] Pi memory headroom checked: `free -h` shows 2.9GB **available**
+      (not the misleading "free" column — buff/cache is reclaimable) with
+      one Go project currently running. Comfortably covers the ~572-715MB
+      measured scraper peak. **Re-check this once the second Go project
+      (LGTM stack — Loki/Grafana/Tempo/Mimir) actually deploys** — that's
+      a meaningfully heavier footprint than a typical small Go binary and
+      could change this picture; don't assume it still holds later
+- [x] Containerize with Docker: `python:3.12-slim` base +
+      `playwright install --with-deps chromium` (not Microsoft's prebuilt
+      image — arm64 availability for this exact Playwright version isn't
+      confirmed). `services/scraper/Dockerfile` written; not yet built or
+      run on the Pi itself — see `services/scraper/DEPLOY.md`
+- [x] Fix `ruff` violations in `services/scraper/main_scraper.py` (E401
+      multiple imports on one line, E402 import-order) — fixed by removing
+      the `sys.path` hack entirely (see Dockerfile's `PYTHONPATH=/app`
+      instead), not just reordering imports
 - [ ] Widen CI's lint scope to the whole repo, not just `backend/`
-- [ ] Add structured logging (`structlog`) — currently bare `print()`
-      calls, no logging framework
-- [ ] Monitoring / dead-man's-switch so a silent failure is caught same-day
-      instead of four months later like last time — **(DECISION NEEDED)**:
-      a `scraper_runs` table + extended `/health` endpoint (reusable,
-      gives a real signal: last run time, records written), a bare
-      external heartbeat ping (e.g. healthchecks.io, free tier, not in the
-      scraper's critical path so it doesn't recreate the cron-job.org
-      single-point-of-failure problem), or both together
+- [x] Add structured logging (`structlog`) — bare `print()` calls replaced
+      throughout `main_scraper.py`
+- [ ] Monitoring: **external heartbeat ping only** (e.g. healthchecks.io,
+      free tier) — `ping_healthcheck()` is implemented in
+      `main_scraper.py` and wired to both the success and failure paths;
+      still needs you to actually create a healthchecks.io account and
+      set `HEALTHCHECK_PING_URL` before it does anything live. The scraper
+      pings it after each successful run; a missed ping alerts you by
+      email. Not in the scraper's critical path
+      (if the ping service is ever down, the scraper still runs and
+      writes data — it just can't alert you), so it doesn't recreate the
+      cron-job.org single-point-of-failure problem. Decided against the
+      `scraper_runs` table/`/health` extension for now — simpler, and
+      doesn't require an Alembic migration before it's useful. Correction
+      to the original justification: this isn't about re-catching the
+      2026-06-01 incident (that was a deliberate stop, not a silent
+      failure) — it's for genuine future unintended failures (IP block,
+      Pi hardware issue, Neon outage, a bug) that haven't happened yet
 - [ ] Acknowledged, not solved by infrastructure: there's no guarantee
       against the target site eventually blocking this specific
       residential IP too. The goal is "common failure mode (datacenter
@@ -133,27 +183,24 @@ discussion.
 
 ---
 
-## Open decisions blocking parts of this plan
+## Decisions log (all settled — nothing left blocking)
 
-1. **Neon secret in Lambda** — plain environment variable (simplest) vs.
-   SSM Parameter Store SecureString (free, avoids the secret sitting in
-   plaintext Terraform state). Leaning SSM as the low-cost-but-more-correct
-   option — confirm?
-2. **Scraper monitoring** — `scraper_runs` table + `/health` extension
-   (more integrated, reuses infra you're building anyway) vs. a bare
-   external heartbeat ping vs. both. Leaning "both" (the table gives you
-   real operational data worth having regardless; a cheap external ping
-   against `/health` is what actually alerts you without you remembering
-   to check).
-3. **Build order** — suggested sequence below, confirm or reorder:
-   1. Scraper → Pi + systemd timer (this is "get it running again," the
-      most time-sensitive item)
-   2. Backend cleanup (dead code, structlog, pytest-cov, CORS) — needed
-      before Lambda packaging anyway
-   3. Lambda + Terraform (backend hosting)
-   4. Frontend migration off Next.js + Vercel deploy
-   5. Monitoring/heartbeat wiring, README, CI additions (Alembic check,
-      widened lint scope)
+- Neon secret in Lambda → plain environment variable.
+- Scraper monitoring → external heartbeat ping only (healthchecks.io-style),
+  no `scraper_runs` table for now.
+- Pi execution → user runs commands themselves; Claude prepares scripts/
+  files, user copies them over and reports back errors (no SSH access
+  granted).
+- AWS/Terraform execution → Claude writes all `.tf` files; user runs
+  `terraform plan`/`apply` themselves and reports back results.
 
-Nothing above gets implemented until the three items in this section are
-answered.
+## Build order
+
+1. Scraper → Pi + systemd timer + heartbeat ping (this is "get it running
+   again," the most time-sensitive item, and monitoring is cheap enough to
+   fold in here rather than treat as a separate later step)
+2. Backend cleanup (dead code, structlog, pytest-cov, CORS) — needed
+   before Lambda packaging anyway
+3. Lambda + Terraform (backend hosting), zip deployment, arm64
+4. Frontend migration off Next.js + Vercel deploy
+5. Polish: README, CI additions (Alembic check, widened lint scope)

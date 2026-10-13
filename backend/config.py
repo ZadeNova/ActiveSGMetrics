@@ -23,7 +23,11 @@ class Settings(BaseSettings):
     LOCAL_BACKEND_HEALTH_URL: Optional[str] = None
     
     PROD_BACKEND_URL: Optional[str] = None
-    
+
+    # Heartbeat ping (e.g. healthchecks.io) for the scraper. Optional so
+    # local runs without a monitoring account configured still work.
+    HEALTHCHECK_PING_URL: Optional[str] = None
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     
 settings = Settings()

@@ -1,0 +1,12 @@
+[Unit]
+Description=ActiveSGMetrics gym occupancy scraper
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker run --rm \
+  --env-file /home/zade/activesg/scraper.env \
+  -v /home/zade/activesg/scraper-debug:/app/debug \
+  --log-driver journald \
+  activesg-scraper:latest
