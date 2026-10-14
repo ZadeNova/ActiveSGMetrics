@@ -181,8 +181,9 @@ Detailed reasoning and specifics for each item are in the sections below.
       browser engine entirely. Implemented in `main_scraper.py`
       (`channel="chromium-headless-shell"`, `page.route` blocking
       image/font/media, `--disable-gpu`)
-- [ ] Keep the existing jitter (`time.sleep(random.uniform(0,60))`) —
-      avoids the "fires at exactly :00 every hour, forever" bot signature.
+- [x] Jitter at the start of each run (`time.sleep(random.uniform(0,300))`,
+      widened from an initial 0-60s) — avoids the "fires at exactly :00
+      every hour, forever" bot signature.
       Note: reducing run frequency (below) helps volume a little but does
       **not** meaningfully reduce ban risk on its own — jitter is what
       actually breaks the pattern; frequency is a separate, legitimate

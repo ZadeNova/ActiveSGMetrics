@@ -7,22 +7,27 @@ root**, not this directory — the Dockerfile copies files from both
 ## 1. One-time setup
 
 ```bash
-mkdir -p /home/zade/activesg
-mkdir -p /home/zade/activesg/scraper-debug
+mkdir -p /home/zade/activesg_metrics
+mkdir -p /home/zade/activesg_metrics/scraper-debug
 ```
 
-Create `/home/zade/activesg/scraper.env` with the real values (this file
-is never committed — it's secrets):
+Create `/home/zade/activesg_metrics/scraper.env` with the real values (this file
+is never committed — it's secrets). **No quotes around values** — unlike
+`.env` files loaded by `python-dotenv`, Docker's `--env-file` takes the
+value literally, quotes included, which breaks anything that parses the
+value afterward (e.g. SQLAlchemy's URL parser):
 
 ```
 DATABASE_URL=<Neon connection string>
 ACTIVE_SG_API=<value from existing .env>
 WEBSITE_URL=https://activesg.gov.sg/gym-pool-crowd
-HEALTHCHECK_PING_URL=<your healthchecks.io ping URL, once you've created one>
+ALERT_EMAIL_FROM=<sender gmail address>
+ALERT_EMAIL_TO=<recipient email address>
+ALERT_EMAIL_APP_PASSWORD=<gmail app password>
 ```
 
-(`HEALTHCHECK_PING_URL` can be left out entirely for now — the scraper
-treats it as optional and just skips pinging if it's unset.)
+(The `ALERT_EMAIL_*` vars are optional — if any is missing, the scraper
+just skips sending a failure email instead of erroring.)
 
 ## 2. Build the image
 
@@ -36,13 +41,13 @@ docker build -f services/scraper/Dockerfile -t activesg-scraper:latest .
 
 ```bash
 docker run --rm \
-  --env-file /home/zade/activesg/scraper.env \
-  -v /home/zade/activesg/scraper-debug:/app/debug \
+  --env-file /home/zade/activesg_metrics/scraper.env \
+  -v /home/zade/activesg_metrics/scraper-debug:/app/debug \
   activesg-scraper:latest
 ```
 
 Confirm: it exits 0, and (once Neon is live) a new row actually lands in
-`gym_occupancy`. If it fails, check `/home/zade/activesg/scraper-debug/`
+`gym_occupancy`. If it fails, check `/home/zade/activesg_metrics/scraper-debug/`
 for a screenshot.
 
 ## 4. Install the systemd units

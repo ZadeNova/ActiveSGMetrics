@@ -94,7 +94,7 @@ def send_failure_email(error: str) -> None:
 
 
 def scrape():
-    time.sleep(random.uniform(0, 60))
+    time.sleep(random.uniform(0, 300))
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
