@@ -31,7 +31,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt', 'backend/requirements-test.txt') }}
 
       - name: Install ruff
-        run: pip install ruff
+        run: pip install ruff==0.17.0
 
       - name: Run ruff
         run: ruff check .
@@ -66,11 +66,12 @@ jobs:
         run: pip install bandit pip-audit
 
       - name: SAST scan (bandit)
-        run: bandit -r backend/ -x backend/tests/ -ll
+        run: bandit -r backend/ services/ -x backend/tests/ -ll
 
       - name: Dependency CVE scan (pip-audit)
-        # PYSEC-2026-161: starlette transitive dep via fastapi==0.128.0, fix requires FastAPI upgrade
-        run: pip-audit -r backend/requirements.txt --ignore-vuln PYSEC-2026-161
+        run: |
+          pip-audit -r backend/requirements.txt
+          pip-audit -r requirements.txt
 
   test:
     name: Test

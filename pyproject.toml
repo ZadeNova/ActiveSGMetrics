@@ -2,6 +2,10 @@
 testpaths = ["backend/tests"]
 pythonpath = ["backend"]
 
+[tool.ruff.lint]
+# Explicit so a new ruff default rule set can't turn CI red on its own.
+select = ["E4", "E7", "E9", "F"]
+
 [tool.coverage.run]
 source = ["backend"]
 omit = ["backend/tests/*", "backend/migrations/*"]
