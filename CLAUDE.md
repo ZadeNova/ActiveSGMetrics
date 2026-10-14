@@ -67,11 +67,21 @@ steps 1 and 4 — implement, run a lightweight version of step 3, tick a
 `PLANS.md` line directly if one obviously applies. No full doc-sync sweep.
 
 ## Git commits
-Commit author is always the user (local `git config user.name`/
-`user.email` — `ZadeNova <muhderfannnn@gmail.com>`), never Claude. Commit
-messages get a `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>`
-trailer line crediting the assist — that's metadata, not a change of
-author. Commit messages: short and concise, describing what changed.
+The user (`ZadeNova <muhderfannnn@gmail.com>`, from local `git config
+user.name`/`user.email`) is the sole author of this repo. No `Co-Authored-By`
+trailers, no "Generated with Claude Code" lines, no Claude attribution of
+any kind in commits or PR descriptions. Commit messages: short and concise,
+describing what changed.
+
+## Secrets
+Never commit credentials, API keys, passwords, connection strings, or
+personal/alert email addresses — not even in docs/plans, and not even
+placeholder-adjacent ("the account is x@y.com"). Real secrets live only in
+gitignored `.env`/`scraper.env` files. When documenting a decision that
+involves one, describe it generically ("a dedicated Gmail account") and
+point to the gitignored file that holds the actual value. Before every
+commit, scan the staged diff for anything that looks like a secret or
+email, not just the files you meant to touch.
 
 ## Engineering principles (do not violate)
 - Keep it simple: no duplicated code, no premature abstraction, smallest

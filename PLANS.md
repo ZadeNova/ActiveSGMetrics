@@ -15,8 +15,9 @@ discussion.
 
 ## Next steps — major milestones
 
-**Milestone 1 — Scraper live on the Pi** *(in progress — DB is live and
-proven end-to-end locally; not yet deployed to the Pi)*
+**Milestone 1 — Scraper live on the Pi** _(in progress — DB is live and
+proven end-to-end locally; not yet deployed to the Pi)_
+
 - [x] Neon project created, region `ap-southeast-1`, direct connection
       string in `backend/.env`
 - [x] `alembic upgrade head` run against it — `gym_metadata`/
@@ -40,26 +41,30 @@ proven end-to-end locally; not yet deployed to the Pi)*
       rename it on GitHub's side if this workflow needs to run again before
       decommissioning
 
-**Milestone 2 — Backend cleanup** *(not started)*
+**Milestone 2 — Backend cleanup** _(not started)_
+
 - [x] Delete dead code: `backend/routers/ingest.py`, `backend/services/ingest_service.py`
-  (done, along with unused `ACTIVE_SG_API`/`*_BACKEND_URL` settings)
+      (done, along with unused `ACTIVE_SG_API`/`*_BACKEND_URL` settings)
 - Add `structlog` + `pytest-cov`, update CORS `ALLOWED_ORIGINS`
 - Fix README's stale claims; add an Alembic CI check; widen lint scope
   repo-wide
 
-**Milestone 3 — Backend on Lambda** *(not started — needs an AWS account
-ready)*
+**Milestone 3 — Backend on Lambda** _(not started — needs an AWS account
+ready)_
+
 - Add Mangum, package as a zip (arm64, manylinux-targeted dependencies)
 - Write the Terraform (Lambda, IAM role, concurrency cap, billing alarm, S3
   state backend) — you run `plan`/`apply` yourself
 - Measure real cold start once deployed, don't assume
 
-**Milestone 4 — Frontend migration** *(not started)*
+**Milestone 4 — Frontend migration** _(not started)_
+
 - Scaffold Vite + React, port the existing components over
 - Point the fetcher at the live Lambda Function URL
 - Deploy to Vercel
 
-**Milestone 5 — Polish** *(not started)*
+**Milestone 5 — Polish** _(not started)_
+
 - README architecture diagram
 - Final end-to-end verification across all four pieces together
 
@@ -92,7 +97,7 @@ Detailed reasoning and specifics for each item are in the sections below.
 - [ ] Package as a **zip deployment, not a container image** — faster
       cold start (no image pull/mount step) and skips ECR entirely.
       Install dependencies with `pip install --platform manylinux2014_aarch64
-      --only-binary=:all: --target ./package` (not a plain local
+    --only-binary=:all: --target ./package` (not a plain local
       `pip install`) so compiled packages like `psycopg2-binary` and
       `pydantic-core` match Lambda's actual runtime instead of the dev
       machine's
@@ -220,7 +225,7 @@ Detailed reasoning and specifics for each item are in the sections below.
       `smtplib`/`email` only, no new pip dependency. `ALERT_EMAIL_FROM`/
       `ALERT_EMAIL_TO`/`ALERT_EMAIL_APP_PASSWORD` set in `config.py` and
       `backend/.env`. **Tested end-to-end**: App Password generated for
-      `calypsolunasol@gmail.com`, forced `send_failure_email()` call,
+      the dedicated alert account, forced `send_failure_email()` call,
       email confirmed received. Known gap, accepted: only catches "ran
       and threw," not total Pi silence. See `docs/OPERATIONAL.md`
 - [ ] Acknowledged, not solved by infrastructure: there's no guarantee
@@ -236,7 +241,9 @@ Detailed reasoning and specifics for each item are in the sections below.
 - Neon secret in Lambda → plain environment variable.
 - Scraper monitoring → **revised**: healthchecks.io dropped (reduce
   external dependencies); failure-only email via Gmail SMTP instead,
-  using a dedicated `calypsolunasol@gmail.com` account, no new third-party
+  using a dedicated Gmail account created just for this (not a personal
+  address — actual value lives in `backend/.env`/`scraper.env`, never
+  committed), no new third-party
   signup. No `scraper_runs` table. Known gap, accepted: this only catches
   "ran and threw an exception" — total silence (Pi offline/dead) isn't
   covered, since nothing can alert if nothing can run. See
