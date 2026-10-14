@@ -57,11 +57,12 @@ steps 1 and 4 — implement, run a lightweight version of step 3, tick a
 `PLANS.md` line directly if one obviously applies. No full doc-sync sweep.
 
 ## Git commits
-The user (`ZadeNova <muhderfannnn@gmail.com>`, from local `git config
-user.name`/`user.email`) is the sole author of this repo. No `Co-Authored-By`
-trailers, no "Generated with Claude Code" lines, no Claude attribution of
-any kind in commits or PR descriptions. Commit messages: short and concise,
-describing what changed.
+The user (from local `git config user.name`/`user.email`) is the sole
+author of this repo. `user.email` is set to a GitHub noreply alias, not a
+real address — never override it with a real email when committing. No
+`Co-Authored-By` trailers, no "Generated with Claude Code" lines, no
+Claude attribution of any kind in commits or PR descriptions. Commit
+messages: short and concise, describing what changed.
 
 ## Secrets
 Never commit credentials, API keys, passwords, connection strings, or
