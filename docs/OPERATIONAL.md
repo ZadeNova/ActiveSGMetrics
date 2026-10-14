@@ -68,3 +68,19 @@ don't re-derive what's already answered here.
   `cd backend && PYTHONPATH=.. ../.venv/bin/python ../services/scraper/main_scraper.py`.
   Verified end-to-end against live Neon: cleared Cloudflare, ingested 30
   gym records, confirmed via direct query.
+- Scraper deployed to the Pi 2026-10-15: image built, manual run verified
+  a fresh row in Neon, systemd timer installed and enabled, confirmed
+  scheduled for the next 8am-9pm SGT slot. `docker run --env-file` does
+  **not** strip quotes from values the way `python-dotenv` does — quoted
+  values in `scraper.env` broke SQLAlchemy's URL parser; `scraper.env`
+  must use bare `KEY=value`, no quotes. Jitter widened from 0-60s to
+  0-5min (`time.sleep(random.uniform(0, 300))`) for a less bot-like
+  pattern, since the only cost is a few minutes' delay on hourly data
+  that doesn't need minute-level precision.
+- Pi log/disk hygiene: journald retention capped at 14 days Pi-wide via
+  `/etc/systemd/journald.conf.d/retention.conf` (`MaxRetentionSec=14day`)
+  — journald doesn't self-prune by time otherwise. Debug screenshots are
+  already bounded by count (3 newest) in `main_scraper.py`, not a
+  separate concern. `docker image prune -f` after each rebuild clears the
+  dangling layer left behind when the `latest` tag moves — not automated,
+  a manual habit documented in `services/scraper/DEPLOY.md`.

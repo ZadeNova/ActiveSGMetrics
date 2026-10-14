@@ -71,7 +71,29 @@ journalctl -u activesg-scraper.service -f    # watch the next run live
 
 ```bash
 docker build -f services/scraper/Dockerfile -t activesg-scraper:latest .
+docker image prune -f
 ```
 
 No service restart needed — the timer's next scheduled run will use the
-freshly tagged image.
+freshly tagged image. The `docker image prune -f` cleans up the old
+dangling (`<none>`-tagged) layer left behind each time the `latest` tag
+moves to a new build — skip it once and nothing breaks, but do it
+regularly or these pile up and eat disk over many redeploys.
+
+## Maintenance: log retention
+
+journald (where the scraper's logs land, via `--log-driver journald`)
+doesn't delete old entries on its own. A drop-in config caps retention at
+14 days, applied Pi-wide (not just this service):
+
+```bash
+sudo mkdir -p /etc/systemd/journald.conf.d
+sudo tee /etc/systemd/journald.conf.d/retention.conf <<'EOF'
+[Journal]
+MaxRetentionSec=14day
+EOF
+sudo systemctl restart systemd-journald
+```
+
+Debug screenshots don't need separate handling — `main_scraper.py`
+already caps `scraper-debug/` at the 3 most recent PNGs on every run.
