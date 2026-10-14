@@ -41,7 +41,8 @@ proven end-to-end locally; not yet deployed to the Pi)*
       decommissioning
 
 **Milestone 2 — Backend cleanup** *(not started)*
-- Delete dead code: `backend/routers/ingest.py`, `backend/services/ingest_service.py`
+- [x] Delete dead code: `backend/routers/ingest.py`, `backend/services/ingest_service.py`
+  (done, along with unused `ACTIVE_SG_API`/`*_BACKEND_URL` settings)
 - Add `structlog` + `pytest-cov`, update CORS `ALLOWED_ORIGINS`
 - Fix README's stale claims; add an Alembic CI check; widen lint scope
   repo-wide
@@ -98,7 +99,7 @@ Detailed reasoning and specifics for each item are in the sections below.
 - [ ] Lambda architecture: **arm64/Graviton**, not x86_64 — slightly
       cheaper per GB-second and consistent with the Pi also being ARM;
       doesn't change the $0 bill either way, just a deliberate pick
-- [ ] Delete dead code: `backend/routers/ingest.py` and
+- [x] Delete dead code: `backend/routers/ingest.py` and
       `backend/services/ingest_service.py` — both empty, not wired into
       `main.py` since commit `7507296`
 - [ ] Add `structlog` — currently zero logging in the backend

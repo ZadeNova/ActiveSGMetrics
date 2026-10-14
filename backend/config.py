@@ -5,8 +5,7 @@ from typing import Optional
 class Settings(BaseSettings):
     # Strictly required
     DATABASE_URL: str
-    ACTIVE_SG_API: str
-    
+
     # Optional
     WEBSITE_URL: Optional[str] = None
     
@@ -18,11 +17,6 @@ class Settings(BaseSettings):
         else:
             return [self.WEBSITE_URL, "http://localhost:3000"]
     
-    LOCAL_BACKEND_URL: str = "http://localhost:8000"
-    LOCAL_BACKEND_HEALTH_URL: Optional[str] = None
-    
-    PROD_BACKEND_URL: Optional[str] = None
-
     # Failure-only email alert for the scraper, sent via Gmail SMTP.
     # Optional so local runs without alerting configured still work.
     ALERT_EMAIL_FROM: Optional[str] = None

@@ -19,7 +19,6 @@ value afterward (e.g. SQLAlchemy's URL parser):
 
 ```
 DATABASE_URL=<Neon connection string>
-ACTIVE_SG_API=<value from existing .env>
 WEBSITE_URL=https://activesg.gov.sg/gym-pool-crowd
 ALERT_EMAIL_FROM=<sender gmail address>
 ALERT_EMAIL_TO=<recipient email address>
