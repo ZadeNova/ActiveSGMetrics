@@ -41,13 +41,23 @@ proven end-to-end locally; not yet deployed to the Pi)_
       rename it on GitHub's side if this workflow needs to run again before
       decommissioning
 
-**Milestone 2 — Backend cleanup** _(not started)_
+**Milestone 2 — Backend cleanup** _(mostly done)_
 
 - [x] Delete dead code: `backend/routers/ingest.py`, `backend/services/ingest_service.py`
-      (done, along with unused `ACTIVE_SG_API`/`*_BACKEND_URL` settings)
-- Add `structlog` + `pytest-cov`, update CORS `ALLOWED_ORIGINS`
-- Fix README's stale claims; add an Alembic CI check; widen lint scope
-  repo-wide
+      (done, along with unused `ACTIVE_SG_API`/`*_BACKEND_URL` settings,
+      `.pre-commit-config.yaml`, and the backend Dockerfile/compose
+      service — Lambda deploys a zip, not an image, per Milestone 3)
+- [x] `pytest-cov` added (85% gate in CI)
+- [x] Alembic migration-check job in `ci.yml` (`alembic upgrade head` +
+      `alembic check`, runs before tests)
+- [x] Lint scope widened to the whole repo (`ruff check .` in CI, not
+      just `backend/`)
+- [ ] Add `structlog` to the **backend** — scraper has it, backend still
+      has zero structured logging
+- [ ] Fix README: still has the removed "Wake Up mechanism" claim and
+      the "soon to be full-stack" phrasing (it already is)
+- [ ] Update CORS `ALLOWED_ORIGINS` — blocked until the Vercel origin
+      exists (Milestone 4), correctly left for later
 
 **Milestone 3 — Backend on Lambda** _(not started — needs an AWS account
 ready)_
@@ -108,8 +118,8 @@ Detailed reasoning and specifics for each item are in the sections below.
       `backend/services/ingest_service.py` — both empty, not wired into
       `main.py` since commit `7507296`
 - [ ] Add `structlog` — currently zero logging in the backend
-- [ ] Add `pytest-cov` to `backend/requirements-test.txt` — right now
-      `pytest --cov` fails outright because it isn't installed
+- [x] Add `pytest-cov` to `backend/requirements-test.txt` — done, 85%
+      gate in CI
 - [ ] Update `ALLOWED_ORIGINS` (CORS) to include the new Vercel origin once
       it exists
 - [ ] Neon connection string: **plain Lambda environment variable**
@@ -117,7 +127,7 @@ Detailed reasoning and specifics for each item are in the sections below.
       rotation without redeploy, mostly matter with multiple IAM
       principals, which this account doesn't have; SSM would also add a
       small cold-start cost for little benefit here)
-- [ ] Add an Alembic migration-check job to `ci.yml` (doesn't exist yet)
+- [x] Add an Alembic migration-check job to `ci.yml` — done
 - [ ] Measure real Lambda + Mangum cold start once built — don't assume
       "fine for a dashboard," verify it
 - [ ] Fix README: drop the "Wake Up mechanism" claim (removed from code)
@@ -216,7 +226,7 @@ Detailed reasoning and specifics for each item are in the sections below.
       multiple imports on one line, E402 import-order) — fixed by removing
       the `sys.path` hack entirely (see Dockerfile's `PYTHONPATH=/app`
       instead), not just reordering imports
-- [ ] Widen CI's lint scope to the whole repo, not just `backend/`
+- [x] Widen CI's lint scope to the whole repo, not just `backend/`
 - [x] Add structured logging (`structlog`) — bare `print()` calls replaced
       throughout `main_scraper.py`
 - [x] Monitoring: **failure-only email via Gmail SMTP** (revised away
