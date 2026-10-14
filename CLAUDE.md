@@ -2,24 +2,14 @@
 
 ## Project
 Gym occupancy analytics platform scraping 30+ ActiveSG facilities (Singapore).
-Portfolio piece for backend/DevOps internship applications (May 2027–May 2028
-internship window, single shot — no second internship). Every architectural
-decision must be interview-defensible, not just functional.
+Portfolio piece for backend/DevOps internship applications.
 
 ## Stack
-- Scraper: Playwright + playwright-stealth, triggered by a systemd timer on
-  a residential-IP host (hosting TBD) — moved off GitHub Actions because
-  Cloudflare fingerprints GitHub's datacenter IP ranges (see
-  `docs/OPERATIONAL.md`)
-- Backend: FastAPI, SQLModel, SQLAlchemy, Alembic, Pydantic Settings,
-  psycopg2-binary — deployed as a container image on AWS Lambda (Function
-  URL, no API Gateway) via Terraform, not Render
-- DB: Neon (replacing Supabase — chosen for connect-triggered
-  autosuspend/resume; see `docs/OPERATIONAL.md`)
-- Frontend: React (Vite), Tailwind, SWR, Recharts — migrated off Next.js
-  (App Router features were unused; single client-fetched dashboard page)
-- Hosting: Vercel (frontend, primary) with S3 + CloudFront provisioned as
-  a documented backup; AWS Lambda (backend); no custom domain/DNS
+Scraper (Playwright, Pi/systemd) · Backend (FastAPI, Lambda) · DB (Neon) ·
+Frontend (React/Vite, Vercel). For what's live vs. planned, and the
+reasoning behind each pick, see `PLANS.md` (roadmap/decisions) and
+`docs/OPERATIONAL.md` (facts confirmed by testing) — don't treat this line
+as current truth on its own, verify per the section below.
 
 ## Verify before acting
 Do not assume project state from prior chat history or commit messages alone.
@@ -84,15 +74,19 @@ commit, scan the staged diff for anything that looks like a secret or
 email, not just the files you meant to touch.
 
 ## Engineering principles (do not violate)
+- This is a portfolio piece for backend/DevOps internship applications —
+  every architectural decision must be interview-defensible, not just
+  functional.
 - Keep it simple: no duplicated code, no premature abstraction, smallest
   change that correctly solves the problem.
 - No premature complexity: minimal viable fix before escalating (e.g.
   scraper bot-detection — see `docs/OPERATIONAL.md` for what was actually
   tried and what the real constraint turned out to be).
 - No pre-commit hooks — CI is the enforcement layer for a solo dev.
-- Rate limiting deferred until there's an external threat model; in-memory
-  rate limiting is unreliable on Render free tier anyway (process
-  restarts/multi-worker split state) — would need Redis.
+- Rate limiting deferred until there's an external threat model; Lambda
+  gives no shared in-memory state to rate-limit with anyway (invocations
+  are isolated, possibly cold, possibly concurrent) — would need Redis/
+  DynamoDB if this ever becomes a real requirement.
 - Resume/README claims must be literally accurate: no claiming anything
   that isn't true of the current code (e.g. don't describe a mechanism
   that was removed, don't call tiered background revalidation
