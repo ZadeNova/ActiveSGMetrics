@@ -7,8 +7,7 @@ from alembic import context
 
 from sqlmodel import SQLModel
 from database import DATABASE_URL
-
-# import supabase/database URL here
+import models.gym  # noqa: F401  # registers the tables on SQLModel.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

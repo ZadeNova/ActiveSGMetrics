@@ -13,24 +13,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-test-db.sh:/docker-entrypoint-initdb.d/init-test-db.sh
-  backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-    volumes:
-      - ./backend:/app/backend
-    networks:
-      - activesg-network
-    depends_on:
-      - db
-
-networks:
-  activesg-network:
-    driver: bridge
 
 volumes:
   postgres_data:
