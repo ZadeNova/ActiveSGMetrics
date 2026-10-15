@@ -24,12 +24,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt', 'backend/requirements-test.txt') }}
-
       - name: Install ruff
         run: pip install ruff==0.17.0
 
@@ -55,12 +49,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
 
       - name: Install security tools
         run: pip install bandit pip-audit
@@ -99,12 +87,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt', 'backend/requirements-test.txt') }}
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-test.txt
 
       - name: Install dependencies
         run: |
