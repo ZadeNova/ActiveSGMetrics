@@ -1,3 +1,9 @@
+# Archived, not a live workflow — moved out of .github/workflows/ on
+# 2026-10-15 once the systemd-timer-on-Pi replacement was confirmed
+# working unattended. Kept for reference: this is what ran the scraper
+# on GitHub Actions' shared datacenter IPs before Cloudflare started
+# blocking those ranges. See docs/OPERATIONAL.md for the root-cause
+# finding and PLANS.md for the Pi-based replacement.
 name: Hourly Gym Scrape
 
 on:

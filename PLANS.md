@@ -34,11 +34,11 @@ discussion.
       `ingest_success` (30 gyms each) in `journalctl`, cross-checked
       against Neon — 5 batches of exactly 30 rows at the matching
       timestamps, no manual intervention
-- [ ] Decommission the old GitHub Actions scraper workflow
-      (`.github/workflows/scraper.yml`) — Pi reliability now confirmed,
-      safe to do. Note: the **GitHub repo secret** is still named
-      `SUPABASE_DATABASE_URL`; rename it to `DATABASE_URL` on GitHub's
-      side if this workflow needs to run again before decommissioning
+- [x] Decommissioned the old GitHub Actions scraper workflow — moved to
+      `docs/archive/scraper.yml.github-actions-workflow` (kept for
+      reference, not runnable; only files in `.github/workflows/` are
+      live). The `SUPABASE_DATABASE_URL` GitHub repo secret note is now
+      moot since the workflow can't run
 
 **Milestone 2 — Backend cleanup** _(mostly done)_
 
