@@ -66,6 +66,12 @@ ready)_
 - Add Mangum, package as a zip (arm64, manylinux-targeted dependencies)
 - Write the Terraform (Lambda, IAM role, concurrency cap, billing alarm, S3
   state backend) — you run `plan`/`apply` yourself
+- Add a small structlog-based request-logging middleware (method/path/
+  status/duration) once this is actually live on Lambda — this is the
+  real production observability win, not reformatting uvicorn's dev-only
+  console output (uvicorn doesn't even run in production; Mangum invokes
+  the ASGI app directly, so there's no uvicorn log stream in CloudWatch
+  to unify with structlog in the first place)
 - Measure real cold start once deployed, don't assume
 
 **Milestone 4 — Frontend migration** _(not started)_
