@@ -15,8 +15,7 @@ discussion.
 
 ## Next steps — major milestones
 
-**Milestone 1 — Scraper live on the Pi** _(in progress — DB is live and
-proven end-to-end locally; not yet deployed to the Pi)_
+**Milestone 1 — Scraper live on the Pi** _(done)_
 
 - [x] Neon project created, region `ap-southeast-1`, direct connection
       string in `backend/.env`
@@ -28,18 +27,18 @@ proven end-to-end locally; not yet deployed to the Pi)_
       (local runs need `PYTHONPATH=..` from inside `backend/`)
 - [x] Monitoring: failure-only email via Gmail SMTP, tested end-to-end
       (healthchecks.io dropped — see `docs/OPERATIONAL.md`)
-- [ ] Follow `services/scraper/DEPLOY.md` on the Pi: build the image, one
-      manual test run, confirm a real row lands in Neon
-- [ ] Install the systemd timer, verify one real unattended 8am-9pm cycle
+- [x] Followed `services/scraper/DEPLOY.md` on the Pi: image built, manual
+      test run confirmed a real row in Neon
+- [x] Systemd timer installed and verified unattended, 2026-10-15: 5
+      consecutive 8am-12pm SGT runs, all `challenge_cleared` →
+      `ingest_success` (30 gyms each) in `journalctl`, cross-checked
+      against Neon — 5 batches of exactly 30 rows at the matching
+      timestamps, no manual intervention
 - [ ] Decommission the old GitHub Actions scraper workflow
-      (`.github/workflows/scraper.yml`) once the Pi's reliability is
-      confirmed. Note: `SUPABASE_DATABASE_URL` was renamed to `DATABASE_URL`
-      repo-wide (config.py, database.py, main_scraper.py, .env,
-      docker-compose.yml, ci.yml, scraper.yml, conftest.py — all verified
-      via ruff + full test suite + a real scraper run against Neon) but the
-      actual **GitHub repo secret** is still named `SUPABASE_DATABASE_URL`;
-      rename it on GitHub's side if this workflow needs to run again before
-      decommissioning
+      (`.github/workflows/scraper.yml`) — Pi reliability now confirmed,
+      safe to do. Note: the **GitHub repo secret** is still named
+      `SUPABASE_DATABASE_URL`; rename it to `DATABASE_URL` on GitHub's
+      side if this workflow needs to run again before decommissioning
 
 **Milestone 2 — Backend cleanup** _(mostly done)_
 

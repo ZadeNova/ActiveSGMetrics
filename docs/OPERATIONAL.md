@@ -84,3 +84,13 @@ don't re-derive what's already answered here.
   separate concern. `docker image prune -f` after each rebuild clears the
   dangling layer left behind when the `latest` tag moves — not automated,
   a manual habit documented in `services/scraper/DEPLOY.md`.
+- 2026-10-15: systemd timer confirmed working fully unattended — 5
+  consecutive runs from 8am-12pm SGT, all cleared Cloudflare and ingested
+  30 gyms, verified both in `journalctl` and by a direct Neon query (5
+  batches of exactly 30 rows at matching timestamps). Milestone 1 is
+  done; residential-IP approach is working as designed. Accepted risk
+  not yet realized: no guarantee this specific IP stays unflagged
+  long-term. Verified this is actually covered: `scrape()` raises on
+  both a failed challenge (`wait_for_selector` timeout) and a non-200
+  response, so a renewed Cloudflare block would hit `send_failure_email`
+  like any other failure, not fail silently.
