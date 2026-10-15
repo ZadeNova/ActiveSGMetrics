@@ -60,12 +60,28 @@ on Milestone 4's Vercel origin)_
 - [ ] Update CORS `ALLOWED_ORIGINS` — blocked until the Vercel origin
       exists (Milestone 4), correctly left for later
 
-**Milestone 3 — Backend on Lambda** _(not started — needs an AWS account
-ready)_
+**Milestone 3 — Backend on Lambda** _(in progress — code/packaging done,
+Terraform blocked on AWS account verification)_
 
-- Add Mangum, package as a zip (arm64, manylinux-targeted dependencies)
-- Write the Terraform (Lambda, IAM role, concurrency cap, billing alarm, S3
-  state backend) — you run `plan`/`apply` yourself
+- [x] Mangum handler added (`handler = Mangum(app)`), verified against a
+      real Function URL-shaped event (payload format v2.0), not just
+      that it imports
+- [x] Packaging script (`scripts/build-lambda-package.sh`): installs
+      deps targeting linux/arm64, bundles with app code into a zip.
+      Verified end-to-end — ran it, confirmed the downloaded wheels are
+      genuinely arm64 builds (not the dev machine's native arch), zip
+      structure checked (`main.py` at root, matching import style), 13MB
+      output, well under Lambda's 50MB direct-upload limit
+- [ ] CORS decision: app-level `CORSMiddleware` only, not Function
+      URL-level CORS — single source of truth
+- [ ] Terraform state bootstrap: S3 bucket + DynamoDB table can't be
+      created by the same Terraform config that uses them as its own
+      backend (chicken-and-egg) — plan is a small separate
+      `terraform/bootstrap/` config with local state, applied once by
+      hand, before the main Lambda config
+- [ ] Write the main Terraform (Lambda, IAM role, concurrency cap,
+      billing alarm) — you run `plan`/`apply` yourself. **Blocked**:
+      waiting on you to verify AWS account/IAM readiness
 - Add a small structlog-based request-logging middleware (method/path/
   status/duration) once this is actually live on Lambda — this is the
   real production observability win, not reformatting uvicorn's dev-only
