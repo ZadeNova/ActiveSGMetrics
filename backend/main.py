@@ -2,6 +2,7 @@ import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from mangum import Mangum
 from routers import data, health
 from config import settings
 
@@ -52,3 +53,7 @@ app.add_middleware(
 
 app.include_router(data.router, prefix="/api/v1", tags=["Data"])
 app.include_router(health.router, prefix="/api/v1", tags=["Health"])
+
+# Lambda entry point (Function URL -> Mangum -> this ASGI app). Unused
+# locally; uvicorn/fastapi-dev import `app` directly instead.
+handler = Mangum(app)
