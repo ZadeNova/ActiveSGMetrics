@@ -40,7 +40,8 @@ discussion.
       live). The `SUPABASE_DATABASE_URL` GitHub repo secret note is now
       moot since the workflow can't run
 
-**Milestone 2 — Backend cleanup** _(mostly done)_
+**Milestone 2 — Backend cleanup** _(done except CORS, which is blocked
+on Milestone 4's Vercel origin)_
 
 - [x] Delete dead code: `backend/routers/ingest.py`, `backend/services/ingest_service.py`
       (done, along with unused `ACTIVE_SG_API`/`*_BACKEND_URL` settings,
@@ -51,10 +52,11 @@ discussion.
       `alembic check`, runs before tests)
 - [x] Lint scope widened to the whole repo (`ruff check .` in CI, not
       just `backend/`)
-- [ ] Add `structlog` to the **backend** — scraper has it, backend still
-      has zero structured logging
-- [ ] Fix README: still has the removed "Wake Up mechanism" claim and
-      the "soon to be full-stack" phrasing (it already is)
+- [x] Added `structlog` to the backend (same JSON setup as the scraper),
+      plus a global unhandled-exception handler and a fixed health check
+      that now actually logs the DB error instead of discarding it
+- [x] Fixed README: corrected the GitHub Actions/Wake Up/`/ingestdata`/
+      Supabase/retry-logic claims to match what's actually running
 - [ ] Update CORS `ALLOWED_ORIGINS` — blocked until the Vercel origin
       exists (Milestone 4), correctly left for later
 
@@ -116,7 +118,9 @@ Detailed reasoning and specifics for each item are in the sections below.
 - [x] Delete dead code: `backend/routers/ingest.py` and
       `backend/services/ingest_service.py` — both empty, not wired into
       `main.py` since commit `7507296`
-- [ ] Add `structlog` — currently zero logging in the backend
+- [x] Add `structlog` — done, same JSON setup as the scraper, plus a
+      global unhandled-exception handler and a fixed health check that
+      now logs the real DB error instead of discarding it
 - [x] Add `pytest-cov` to `backend/requirements-test.txt` — done, 85%
       gate in CI
 - [ ] Update `ALLOWED_ORIGINS` (CORS) to include the new Vercel origin once
@@ -129,9 +133,10 @@ Detailed reasoning and specifics for each item are in the sections below.
 - [x] Add an Alembic migration-check job to `ci.yml` — done
 - [ ] Measure real Lambda + Mangum cold start once built — don't assume
       "fine for a dashboard," verify it
-- [ ] Fix README: drop the "Wake Up mechanism" claim (removed from code)
-      and the "soon to be full-stack" phrasing (it already is); add an
-      architecture diagram
+- [x] Fix README: dropped the "Wake Up mechanism" claim, "soon to be
+      full-stack" phrasing, the deleted `/ingestdata` endpoint, Supabase,
+      and non-existent retry logic
+- [ ] Add an architecture diagram to the README (Milestone 5 polish)
 
 ## Cloud / Infra
 
