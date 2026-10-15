@@ -1,6 +1,6 @@
 # ActiveSGMetrics
 
-**ActiveSGMetrics** is a soon to be full-stack data engineering and analytics project designed to scrape, store, and analyze real-time gym occupancy rates from ActiveSG facilities.
+**ActiveSGMetrics** is a full-stack data engineering and analytics project designed to scrape, store, and analyze real-time gym occupancy rates from ActiveSG facilities.
 
 The goal is to build a historical dataset of gym occupancy rates and analyze them :D
 
@@ -17,21 +17,21 @@ The project consists of three main components:
 
 1.  **Scraper Service (`/services/scraper`)**:
     * Built with **Playwright** (Python) to handle dynamic JavaScript content on the ActiveSG portal.
-    * Runs automatically via **GitHub Actions** (Dispatch/CRON).
-    * Includes a **"Wake Up" mechanism** to ensure the backend is online before data ingestion.
+    * Runs automatically via a **systemd timer** on a residential-IP host (Raspberry Pi) — Cloudflare blocks GitHub Actions' shared datacenter IPs, so it can't run there.
+    * Writes directly to the database; ingestion isn't exposed as an API endpoint.
 2.  **Backend API (`/backend`)**:
     * Built with **FastAPI**.
-    * Handles data ingestion (`/ingestdata`), validation, and retrieval.
+    * Serves query/analytics endpoints (occupancy history, heatmaps, comparisons) over the scraped data.
     * Uses **SQLModel** (SQLAlchemy + Pydantic) for ORM and type safety.
 3.  **Database**:
-    * **PostgreSQL** (hosted on Supabase).
+    * **PostgreSQL** (hosted on Neon).
     * Schema management via **Alembic** migrations.
     * Stores `GymMetaData` (names, IDs) and `GymOccupancyData` (historical capacity %, timestamped).
 
 ## Features
 
 * **Automated Scraping**: Fetches real-time capacity for all ActiveSG gyms.
-* **Resilient Ingestion**: Scraper includes retry logic, user-agent rotation, and health checks to prevent data loss.
+* **Bot-detection-aware**: User-agent rotation and randomized start-time jitter, plus failure-only email alerting if a run ever breaks.
 * **Historical Tracking**: Stores timestamped occupancy data (with timezone support) to enable trend analysis.
 * **Modern Stack**: Fully typed Python codebase using Pydantic and SQLModel.
 

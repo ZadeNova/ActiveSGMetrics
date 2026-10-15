@@ -1,4 +1,4 @@
-# pip freeze | grep -E "fastapi|uvicorn|sqlmodel|alembic|psycopg2|python-dotenv|pydantic-settings|requests"
+# pip freeze | grep -E "fastapi|uvicorn|sqlmodel|alembic|psycopg2|python-dotenv|pydantic-settings|requests|structlog"
 alembic==1.18.0
 fastapi==0.143.1
 psycopg2-binary==2.9.11
@@ -6,4 +6,5 @@ pydantic-settings==2.16.0
 python-dotenv==1.2.2
 requests==2.33.0
 sqlmodel==0.0.31
+structlog==26.1.0
 uvicorn==0.40.0
