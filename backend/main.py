@@ -9,6 +9,7 @@ structlog.configure(
     processors=[
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.add_log_level,
+        structlog.processors.format_exc_info,
         structlog.processors.JSONRenderer(),
     ]
 )
@@ -21,8 +22,23 @@ app = FastAPI()
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    log.error("unhandled_exception", path=request.url.path, error=str(exc))
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+    log.error(
+        "unhandled_exception",
+        path=request.url.path,
+        error=str(exc),
+        exc_info=exc,
+    )
+    response = JSONResponse(
+        status_code=500, content={"detail": "Internal server error"}
+    )
+    # ServerErrorMiddleware (which runs this handler) sits outside
+    # CORSMiddleware regardless of registration order, so CORS headers
+    # never reach a response from here unless added manually.
+    origin = request.headers.get("origin")
+    if origin in settings.ALLOWED_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 app.add_middleware(
     CORSMiddleware,
