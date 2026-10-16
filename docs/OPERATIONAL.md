@@ -17,11 +17,23 @@ don't re-derive what's already answered here.
   (httpx/requests) cannot replicate regardless of headers/cookies copied
   from a real browser session. A real browser engine is required for every
   request, not just the first.
-- Headless-shell + blocking images/fonts/media + disabled GPU cuts the
-  scraper's peak memory from ~715MB to ~572MB. That's close to the floor
-  for this approach — further reduction would require dropping the real
-  browser engine, which isn't viable given the TLS-fingerprinting finding
-  above.
+- Scraper Chromium peak memory, measured on the Pi (aarch64, Playwright
+  1.57.0) on 2026-10-17 with `scripts/measure_scraper_memory.py`: median of
+  5 interleaved runs, peak summed over the browser process tree.
+  Full Chromium (`channel="chromium"`) 393MB PSS / 829MB RSS →
+  headless-shell 270MB PSS / 496MB RSS (-31% PSS, -40% RSS). The current
+  production config (headless-shell + `--disable-gpu` + blocking
+  images/fonts/media + 256MB JS-heap cap) measured the same as
+  headless-shell alone (271MB PSS / 494MB RSS), so the whole saving comes
+  from the headless-shell binary; the other flags have no measurable
+  memory effect (kept — cheap, and blocking saves bandwidth, unmeasured).
+  PSS splits shared pages between processes; RSS double-counts them.
+  The earlier "~715MB → ~572MB" figures had no recorded method and did not
+  reproduce, so they're retired. Gotcha: in Playwright ≥1.49 plain
+  `headless=True` already uses headless-shell, so a true "before" baseline
+  needs `channel="chromium"` explicitly. Going lower would require
+  dropping the real browser engine, which isn't viable given the
+  TLS-fingerprinting finding above.
 - cron-job.org → GitHub `workflow_dispatch` was the old trigger chain;
   being replaced with a systemd timer on a self-controlled, residential-IP
   host to fix the IP-reputation problem at its source and remove a
@@ -30,7 +42,7 @@ don't re-derive what's already answered here.
   ships ARM64 Chromium builds, not armhf/32-bit.
 - Pi memory: `free -h` showed 2.9GB available (not the "free" column —
   buff/cache is reclaimable) with one Go project running, comfortably
-  covering the scraper's ~572-715MB peak. Re-check once the second Go
+  covering the scraper's measured ~500MB RSS peak (see above). Re-check once the second Go
   project (LGTM stack) deploys — that's a meaningfully heavier footprint
   than a typical small Go binary.
 - `playwright install --with-deps chromium` also installs the

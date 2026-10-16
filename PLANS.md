@@ -216,13 +216,15 @@ Detailed reasoning and specifics for each item are in the sections below.
       The target site fingerprints the TLS handshake itself (no
       `cf_clearance` cookie exists to reuse), so a real browser engine is
       mandatory for every single request, not just the first
-- [x] Use the headless-shell binary + block images/fonts/media + disable
-      GPU — measured ~572MB peak vs. ~715MB baseline for plain headless
-      Chromium; this is close to the realistic floor for a real-browser
-      approach, further reduction isn't available without dropping the
-      browser engine entirely. Implemented in `main_scraper.py`
+- [x] Use the headless-shell binary (+ block images/fonts/media, disable
+      GPU) — measured on the Pi: 271MB PSS vs. 393MB for full Chromium
+      (-31%; 494MB vs. 829MB RSS). The saving is entirely from
+      headless-shell; GPU/blocking showed no measurable memory effect
+      (see `docs/OPERATIONAL.md`). This is close to the realistic floor
+      for a real-browser approach. Implemented in `main_scraper.py`
       (`channel="chromium-headless-shell"`, `page.route` blocking
-      image/font/media, `--disable-gpu`)
+      image/font/media, `--disable-gpu`); re-measure with
+      `scripts/measure_scraper_memory.py`
 - [x] Jitter at the start of each run (`time.sleep(random.uniform(0,300))`,
       widened from an initial 0-60s) — avoids the "fires at exactly :00
       every hour, forever" bot signature.
@@ -238,7 +240,7 @@ Detailed reasoning and specifics for each item are in the sections below.
       14 runs/day instead of 24
 - [x] Pi memory headroom checked: `free -h` shows 2.9GB **available**
       (not the misleading "free" column — buff/cache is reclaimable) with
-      one Go project currently running. Comfortably covers the ~572-715MB
+      one Go project currently running. Comfortably covers the ~500MB RSS
       measured scraper peak. **Re-check this once the second Go project
       (LGTM stack — Loki/Grafana/Tempo/Mimir) actually deploys** — that's
       a meaningfully heavier footprint than a typical small Go binary and
